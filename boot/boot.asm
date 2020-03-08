@@ -12,10 +12,6 @@ jmp boot
 %include "boot_load.asm"
 
     ;硬盘数据结构
-    disk_load_packet:
-
-
-    
     ;规定loader名称
     Loader_Target db "loader.bin"
     Loader_Length equ $-Loader_Target
