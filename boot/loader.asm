@@ -14,3 +14,4 @@ jmp loader_initial
 ;载入配置信息
 %include "pm.inc"
 %include "loader.inc"
+%include "gdt.asm"
