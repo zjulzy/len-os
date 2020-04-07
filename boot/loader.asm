@@ -102,7 +102,7 @@ Label_Data:
     MemCheckBuff    equ  LoaderPLA+_MemCheckBuff
     DiskAddressPacket equ LoaderPLA+_DiskAddressPacket
 
-loader_start:                                    ; loader代码入口
+Loader_Start:                                    ; loader代码入口
     mov  ax, cs
     mov  ds, ax
     mov  ax, RealModeStackBase
@@ -149,19 +149,19 @@ loader_start:                                    ; loader代码入口
 	mov	cx,	ax
     ; 如果根目录占用超过12个block,则只搜索前12个
 	cmp cx, 12
-	jle root_dir_read
+	jle .RootLoad
 	mov cx, 12
 
-RootLoad:
+.RootLoad:
     cmp cx , 0
-    je   NoKernel
+    je   .NoKernel
     call  ReadSector
     dec  cx            ; cx表示还剩多少个block未被搜索
     add bx,4
 	mov	eax,[es:bx]
 	add eax,eax
 	mov	dword	[_DiskAddressPacket + 8],	eax
-SearchKernel:
+.SearchKernel:
     pusha
 	mov si,KernelName
 	mov eax, RootDirBase
@@ -177,33 +177,33 @@ SearchKernel:
 	push bx
     ; ********************************************************
     ; 以db为单位对比文件名
-FileNameCmp
+.FileNameCmp
     lodsb				; ds:si -> al
 	;只有bx能当做基址寄存器
 	cmp al,  byte[gs:bx+File_Name_Offset]
-	jnz NoKernel
+	jnz .NoKernel
 	dec cl
-	jz KernelFound
+	jz .KernelFound
 	inc bx
-	jmp filenamecmp
-NextMatch:
+	jmp .FileNameCmp
+.NextMatch:
     pop   bx
     add bx, word [gs:bx+RecordLengthOffset]
 	cmp bx,1024
-	jl SearchKernel
+	jl .SearchKernel
 	popa
-	jmp RootLoad
-NoKernel:
+	jmp .RootLoad
+.NoKernel:
     pop  bx
     mov dx, 0403h
-	call DispStr_In_RealMode
+	call RealModeDisp
 	jmp $
-KernelFound:
+.KernelFound:
     pop  bx
 	mov dx, 0401h
-	call DispStr_In_RealMode
+	call RealModeDisp
 
-KernelLoad:
+.KernelLoad:
     mov eax, dword [gs:bx + InodeNumberOffset]
 	call	get_inode
 	
@@ -212,4 +212,46 @@ KernelLoad:
 	
 	call	LoadFile
 
-; 进入保护模式
+; 从此以后的代码在保护模式下执行 ----------------------------------------------------
+; 32 位代码段. 由实模式跳入 ---------------------------------------------------------
+[SECTION .s32]
+
+ALIGN	32
+
+[BITS	32]
+
+Label_PM_Start:
+    ; 初始化堆栈
+    mov	ax, SelectorVideo
+	mov	gs, ax
+	mov	ax, SelectorFlatRW
+	mov	ds, ax
+	mov	es, ax
+	mov	fs, ax
+	mov	ss, ax
+	mov	esp, TopOfStack
+
+    ; 输出保护模式初始化完成
+    push KernelReady
+    call DispStr
+    call DispReturn
+    add esp 4
+
+    call	InitKernel
+	push KernelReady
+	call 	DispStr
+	call	DispReturn
+	add esp,	4
+
+    mov ax,SelectorVideo
+	mov gs,ax
+
+    	
+	;***************************************************************
+	jmp	SelectorFlatC:Kernel_Enter_point	; 正式进入内核 
+	;***************************************************************
+
+
+; 堆栈就在32位代码段的末尾
+Protect_Mode_Stack_Space:	times	1000h	db	0
+Protect_Mode_Stack_Top	equ	Loader_Phy_Address + $

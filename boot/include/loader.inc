@@ -59,11 +59,11 @@ Inode_Block equ 40
 
 
 ; ELF文件相关的常量
-ELFHeadere_phnum      equ 0x2c
-ELFHeadere_phoff      equ 0x1c
-ELFProgramHeaderp_size   equ 0x10
-ELFProgramHeaderp_offset equ 0x4
-ELFProgramHeaderp_vaddr  equ 0x8
+ELFHeader_e_phnum      equ 0x2c
+ELFHeader_e_phoff      equ 0x1c
+ELFProgramHeader_p_size   equ 0x10
+ELFProgramHeader_p_offset equ 0x4
+ELFProgramHeader_p_vaddr  equ 0x8
 
 ; 记录目录项中的数据结构偏移
 InodeNumberOffset    equ 0
