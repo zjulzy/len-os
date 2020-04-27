@@ -2,10 +2,11 @@
 
 ; 导入全局变量
 extern gdt_ptr
+extern idt_ptr
 extern disp_pos
 
 ; 导入kernel.c函数
-extern cstart
+extern init_gdt       //将gdt_ptr指向新的GDT
 
 
 
@@ -16,7 +17,7 @@ extern cstart
 StackSpace          resb        2*1024
 StackTop:
 ; -------------------------------------------------------------------------------------
-;代码段
+; 代码段----------------------------------------------------------------------------------------
 [SECTION .text]
 
 global _start                 ; 导出_start_
@@ -28,4 +29,5 @@ _start:
     sgdt [gdt_ptr]
     call cstart                       ; kernel.c中改变gdt_ptr
     lgdt [gdt_ptr]
-
+    ; lidt  [idt_ptr]
+; --------------------------------------------------------------------------------------------

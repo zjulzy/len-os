@@ -16,16 +16,16 @@ DASM = ndisasm
 
 GCC = gcc
 LD = ld
-INCLUDE_PATH = -I
+INCLUDE_PATH = -I include/essential/ -l include/display
 # boot和kernel汇编flag
 BOOT_ASM_FLAG = -I boot/include
 KERNEL_ASM_FLAG = -I kernel/include
-
+C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32 -fno-stack-protector
 # 目标文件定义
 LENBOOT= boot/boot.bin boot/loader.bin
 LENKERNEL = kernel/kernel.bin
 #中间文件定义
-OBJS =
+OBJS = kernel/kernel.o  lib/essential/proto.os lib/interrupt/intertupt.o lib/interrupt/interrupt_option.o
 # 本makefile支持的所有操作
 .PHONY : initialize everything clean buildimg realclean image disasm
 
@@ -51,4 +51,7 @@ buildimg :
 boot/boot.bin: boot/boot.asm boot/include/boot.inc boot/include/Ext.inc boot/include/boot_load.asm
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<
 boot/loader.bin:boot/loader.asm boot/include/loader.inc boot/include/pm.inc boot/include/loader_include.asm
-	$(asm) $(BOOT_ASM_FLAG) -o $@ $<
+	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<
+
+lib/essential/proto.o: lib/essential/proto.asm
+	$(ASM) $(KERNEL_ASM_FLAG ) -o $@ $<
