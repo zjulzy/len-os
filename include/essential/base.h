@@ -5,7 +5,6 @@
 #include "global.h"
 #include "display.h"
 #include "memory.h"
-#include "const.h"
 
 void hwint00();
 void hwint01();

@@ -7,9 +7,26 @@ extern disp_pos
 
 ; 导入kernel.c函数
 extern init_gdt       //将gdt_ptr指向新的GDT
+extern init_idt
+extern init_tss
 
-
-
+; 导出中断处理函数
+global  hwint00
+global  hwint01
+global  hwint02
+global  hwint03
+global  hwint04
+global  hwint05
+global  hwint06
+global  hwint07
+global  hwint08
+global  hwint09
+global  hwint10
+global  hwint11
+global  hwint12
+global  hwint13
+global  hwint14
+global  hwint15
 ; -------------------------------------------------------------------------------------
 ; 堆栈段
 [SECTION .bss]
@@ -29,5 +46,13 @@ _start:
     sgdt [gdt_ptr]
     call cstart                       ; kernel.c中改变gdt_ptr
     lgdt [gdt_ptr]
-    ; lidt  [idt_ptr]
+    ;打开中断
+    call init_idt
+    lidt  [idt_ptr]
+    //强制使用刚刚初始化的结构
+    jmp SELECTOR_KERNEL_CS:kernel_start
 ; --------------------------------------------------------------------------------------------
+
+kernel_start:
+
+sys_call:   
