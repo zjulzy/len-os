@@ -15,8 +15,16 @@ extern DESCRIPTOR gdt[GDT_SIZE];
 extern u8 idt_ptr[6];
 extern GATE idt[IDT_SIZE]
 
-
-
+//使用多级循环队列来实现进程调度
+extern PROCESS* process_queen1_head;
+extern PROCESS process_queen1_tail;
+extern PROCESS* process_queen2_head;
+extern PROCESS  process_queen2_tail;
+extern PROCESS* process_queen3_head;
+extern PROCESS process_queen3_tail;
+//阻塞状态队列
+extern PROCESS* process_blocked_head;
+extern PROCESS process_blocked_tail;
 
 
 

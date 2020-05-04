@@ -17,5 +17,24 @@
 // GDT 和 IDT 中描述符的个数
 #define GDT_SIZE 128
 #define IDT_SIZE 256
+//每个进程允许使用的ldt数目
+#define LDT_SIZE 2
 
+//===========================================================
+//GDT相关
+//描述符索引,用于在c文件中确定选择子对应的描述符数组下标
+//部分由loader确定
+#define INDEX_DUMMY 0
+#define INDEX_FLAT_C 1
+#define INDEX_FLAT_RW 2
+#define INDEX_VIDEO 3
+#define INDEX_TSS 4
+#define INDEX_LDT_FIRST 5
+//选择子
+#define SELECTOR_DUMMY 0
+#define SELECTOR_FLAT_C 0x08
+#define SELECTOR_FLAT_RW 0x10
+#define SELECTOR_VIDEO (0x18 + 3)
+
+//===========================================================
 #endif
