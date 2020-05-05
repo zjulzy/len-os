@@ -37,4 +37,7 @@
 #define SELECTOR_VIDEO (0x18 + 3)
 
 //===========================================================
+//线性地址转为物理地址
+# define vir2phy(seg_base,vir) (u32)(((u32)seg_base)+(u32)vir)
+
 #endif

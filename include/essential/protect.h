@@ -101,3 +101,44 @@ typedef struct s_proc {
     struct s_proc* next_sending;
 
 } PROCESS;
+
+// 这个结构体用来定义系统初始进程
+// 这个设计最早来自minix
+typedef struct s_task {
+    task_f initial_eip;
+    int stacksize;
+    char name[16];
+    int priority;
+    u32 pid;
+} TASK;
+
+//tss结构体
+typedef struct s_tss {
+    u32 backlink;
+    u32 esp0;  //内核段栈指针
+    u32 ss0;   //内核段栈基址
+    u32 esp1;
+    u32 ss1;
+    u32 esp2;
+    u32 ss2;
+    u32 cr3;
+    u32 eip;
+    u32 flags;
+    u32 eax;
+    u32 ecx;
+    u32 edx;
+    u32 ebx;
+    u32 esp;
+    u32 ebp;
+    u32 esi;
+    u32 edi;
+    u32 es;
+    u32 cs;
+    u32 ss;
+    u32 ds;
+    u32 fs;
+    u32 gs;
+    u32 ldt;
+    u16 trap;
+    u16 iobase;  // I/O位图基址大于或等于TSS段界限，就表示没有I/O许可位图
+} TSS;

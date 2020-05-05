@@ -5,7 +5,10 @@
 #include "global.h"
 #include "display.h"
 #include "memory.h"
+#include "interrupt_opinion.h"
 
+//初始化描述符
+void init_descriptor(DESCRIPTOR *p_desc, u32 base, u32 limit, u16 attribute);
 void hwint00();
 void hwint01();
 void hwint02();
@@ -23,4 +26,5 @@ void hwint13();
 void hwint14();
 void hwint15();
 
+u32 seg2phys(u16 seg);
 #endif
