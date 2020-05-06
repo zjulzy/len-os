@@ -31,3 +31,14 @@ void init_idt(){
     *p_idt_limit = IDT_SIZE * sizeof(GATE) - 1;
     *p_idt_base = (u32)&idt;
 }
+
+void init_tss(){
+    memset(&tss, 0, sizeof(tss));
+    tss.ss0 = SELECTOR_KERNEL_DS;
+    init_descriptor(&gdt[INDEX_TSS],
+                    vir2phys(seg2phys(SELECTOR_KERNEL_DS), &tss),
+                    sizeof(tss) - 1,
+                    //段属性
+                    DA_386TSS);
+    tss.iobase = sizeof(tss);
+}

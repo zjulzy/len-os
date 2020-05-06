@@ -69,4 +69,22 @@ sys_call:
 
 ALIGN 16
 hwint00:
+    mov  al ,  EOI
+    out   INT_MASTER_CTL , al 
+    
     iretd
+
+//中断返回函数,完成特权级的切换
+restart:
+    mov  esp , [proc_queen1_head]
+    lldt	[esp + P_LDT_SEL]
+	lea	eax, [esp + P_STACKTOP]
+	mov	dword [tss + TSS3_S_SP0], eax
+    dec	dword [k_reenter]
+	pop	gs
+	pop	fs
+	pop	es
+	pop	ds
+	popad
+	add	esp, 4
+	iretd

@@ -1,4 +1,5 @@
 //实现基本功能的函数,统一essential文件夹下各头文件
+//声明在base.h和kernel中定义的函数
 #ifndef LENOS_BASE_H
 #define LENOS_BASE_H
 //layer = 0
@@ -27,4 +28,7 @@ void hwint14();
 void hwint15();
 
 u32 seg2phys(u16 seg);
+void init_gdt();
+void init_idt();
+void init_tss();
 #endif
