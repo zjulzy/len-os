@@ -48,7 +48,7 @@ image : everything clean buildimg
 buildimg : 
 
 # 生成boot和loader
-boot/boot.bin: boot/boot.asm boot/include/boot.inc boot/include/Ext.inc boot/include/boot_load.asm
+boot/boot.bin: boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc boot/include/boot_load.asm
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<
 boot/loader.bin:boot/loader.asm boot/include/loader.inc boot/include/pm.inc boot/include/loader_include.asm
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<

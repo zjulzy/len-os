@@ -2,7 +2,7 @@
 ; loader.asm
 ; 由boot引导加载入内存后，进行以下步骤：
 ; １．为了分页,从BIOS获取内存信息
-; ２．搜索并加载kernrl.bin
+; ２．搜索并加载kernel.bin
 ; ３．由实模式进入保护模式
 ; ４．启动内存分页机制
 ; ５．重新部署kernel
@@ -21,10 +21,10 @@ jmp loader_initial
 ; GDT段描述符表
 ; 用于生成描述符的宏定义在pm.inc
 ;                                                                          段基址               段界限         属性
-LABEL_GDT:			Descriptor            				   0,                    	0, 					0																	; 空描述符
-LABEL_DESC_FLAT_C:		Descriptor  		  0,              0fffffh, 			DA_CR  | DA_32 | DA_LIMIT_4K				; 0 ~ 4G(靠偏移寻址)
-LABEL_DESC_FLAT_RW:	 Descriptor             0,              0fffffh, 			DA_DRW | DA_32 | DA_LIMIT_4K			; 0 ~ 4G(靠偏移寻址)
-LABEL_DESC_VIDEO:		 Descriptor	 0B8000h,              0ffffh, 			DA_DRW | DA_DPL3									; 显存,首地址为0B8000h
+LABEL_GDT:			Descriptor          0,                    	0, 					0																	; 空描述符
+LABEL_DESC_FLAT_C:		Descriptor      0,              0fffffh, 			DA_CR  | DA_32 | DA_LIMIT_4K				; 0 ~ 4G(靠偏移寻址)
+LABEL_DESC_FLAT_RW:	 Descriptor         0,              0fffffh, 			DA_DRW | DA_32 | DA_LIMIT_4K			; 0 ~ 4G(靠偏移寻址)
+LABEL_DESC_VIDEO:		 Descriptor	 0B8000h,           0ffffh, 			DA_DRW | DA_DPL3									; 显存,首地址为0B8000h
 GdtLen		equ	$ - LABEL_GDT                        ;GDT长度
 
 GdtPtr:
@@ -177,7 +177,7 @@ Loader_Start:                                    ; loader代码入口
 	push bx
     ; ********************************************************
     ; 以db为单位对比文件名
-.FileNameCmp
+.FileNameCmp:
     lodsb				; ds:si -> al
 	;只有bx能当做基址寄存器
 	cmp al,  byte[gs:bx+File_Name_Offset]
@@ -235,7 +235,7 @@ Label_PM_Start:
     push KernelReady
     call DispStr
     call DispReturn
-    add esp 4
+    add esp ,4
 
     call	InitKernel
 	push KernelReady

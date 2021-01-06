@@ -42,8 +42,8 @@ display_str:
     mov ax , ds
     mov es , ax
     mov cx , Booting_Message_Length
-    mov ax, 0x0130h
-    mov bx, 0x07h
+    mov ax, 0x0130
+    mov bx, 0x07
     mov dl, 0
     int 10h
     popa                  ;出栈
@@ -84,7 +84,7 @@ inode_loader:
 	add eax, eax		; eax => 所在的总的扇区号
 	mov	dword	[disk_address_packet + 8],	eax
 
-	call read_sector
+	call sector_reader
 
 	mov bx, InodeTable_Base
 	mov es, bx

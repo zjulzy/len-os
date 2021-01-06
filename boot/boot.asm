@@ -4,13 +4,14 @@
 ; 找到后将loader.bin加载到内存中并将控制权交给loader
 ; --------------------------------------------------------------------
 
-org	07c00h                               ;提醒bios将引导加载到0x07c00处，由BIOS决定，与cpu无关，07c00即32KB最早IBM的PC
+org	07c00h                      ;提醒bios将引导加载到0x07c00处，由BIOS决定，与cpu无关，07c00即32KB最早IBM的PC
 jmp boot
 
 %include "boot.inc"
 ;Ext2磁盘相关信息
 %include "Ext2.inc"
 %include "boot_load.asm"
+
 
     ;硬盘数据结构
     ;规定loader名称
@@ -20,23 +21,24 @@ jmp boot
 boot:
     ;读取栈底地址
     mov ax, cs
-    mov ds, cs
-    mov es ,cs
-    mov ss, cs
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
     mov sp, Stack_Base
 
     ;输出配置信息
     call  clear_screen
     mov dh, 0
     call  display_str
-    call  sector_reader            //读取超级块
+    call  sector_reader            ;读取超级块
 
     ; mov word 初始化读取磁盘使用的数据结构
     mov word	[disk_address_packet + 4],	GroupDescriptors_Offset
 	mov	word	[disk_address_packet + 6],	GroupDescriptors_Base
 	mov	dword	[disk_address_packet + 8],	GroupDescriptors_LBA_L
 	mov	dword	[disk_address_packet + 12],	GroupDescriptors_LBA_H
-	call	read_sector
+	call sector_reader
+
 
     ; 对inode结构体的操作
     ;inode是文件对应的索引节点,存放文件元数据,存储在磁盘的inode table中
@@ -53,7 +55,7 @@ boot:
     mov eax , [es:bx+Inode_Blocks]
     add eax , eax
     mov dword [disk_address_packet + 8], eax
-    mov dword [disk_address_packet+ 12],0        //高32位为0
+    mov dword [disk_address_packet+ 12],0        ;高32位为0
 
     mov	eax, [es:bx + Inode_Blocks]
 	shr eax, 1
@@ -67,7 +69,7 @@ boot:
 root_loader:
     cmp	cx, 0
 	je	loader_not_found
-	call	read_sector
+	call	sector_reader
 	dec cx
 	add bx,4
 	mov	eax,[es:bx]

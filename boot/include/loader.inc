@@ -20,7 +20,8 @@ RealModeStackTop equ 0x400h
 ; kernel被loader加载时放置在0x80000~0x90000h
 ; 重新部署后分配的空间为0x30000h~0x80000h
 ; kernel代码入口为0x30000h
-KernelName:   db   "kernel.bin"
+
+KernelName   db   "kernel.bin"
 KernelNameLength equ $ - Kernel_Name
 KernelPLA	equ	0x70000h
 KernelEntrypoint equ 0x30000h
