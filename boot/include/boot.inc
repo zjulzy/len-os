@@ -8,7 +8,8 @@ Stack_Base equ 0x7c00
 ; loader加载的基址和偏移
 Loader_Base equ 0x9000
 Loader_Offset equ 0x00
-
+Loader_Name db "loader_demo.bin"
+Loader_Name_Length equ $-Loader_Name
 ; 超级块加载的内存地址
 SuperBlock_Base	equ  0x070
 SuperBlock_Offset equ 0x00

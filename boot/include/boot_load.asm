@@ -1,5 +1,10 @@
 ; ---------------------------------------------------------------------------------------
 ; 记录MBR引导过程中的一些操作
+; 读取磁盘块所用数据结构: disk_address_packet
+; 清屏操作:           clear_screen
+; 输出状态信息：       display_str 
+; 读扇区:             sector_reader
+; 加载inode:          inode_loader
 ; ---------------------------------------------------------------------------------------
 
 ;读取磁盘块所用数据结构
@@ -16,7 +21,7 @@ disk_address_packet:
 Booting_Message:
         db  "Booting...      "
         db  "Fa Xian Loader  "
-        db "Loader Not Found"
+        db  "Loader Not Found"
 
     Booting_Message_Length equ 16               ;打印状态信息长度相同
 

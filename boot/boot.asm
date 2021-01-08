@@ -10,13 +10,8 @@ jmp boot
 %include "boot.inc"
 ;Ext2磁盘相关信息
 %include "Ext2.inc"
-%include "boot_load.asm"
+%include "boot_load.asm"      ;相关函数
 
-
-    ;硬盘数据结构
-    ;规定loader名称
-    Loader_Target db "loader.bin"
-    Loader_Length equ $-Loader_Target
 
 boot:
     ;读取栈底地址
@@ -88,7 +83,7 @@ loader_cmp:
     xor cx,cx
 	mov cl, Loader_Name_Length
 	cmp cl, byte [gs:bx+Name_Len_Offset]
-	jnz file_not_match
+	jnz loader_not_match
 	mov si,Loader_Name
 	push bx
     ; lodsb指令将ds:si的一个字节装入al中,
@@ -117,28 +112,26 @@ loader_not_match:
 
 loader_not_found:
 	mov	dh,	2
-	call disp_str
+	call display_str
 	jmp	$
 
 loader_found:
 	;这个堆栈以后就不用了,没必要恢复栈顶指针
 	mov	dh,	1
-	call	disp_str
+	call	display_str
 
 	; 好了终于能加载Loader了!!!!!!!
 	; 此时寄存器情况
 	; gs:bx => 当前目录项的指针
 	mov eax, dword [gs:bx + Inode_Number_Offset]
-	call get_inode
+	call inode_loader
 	
 	mov word	[disk_address_packet + 4],	Loader_Offset
 	mov	word	[disk_address_packet + 6],	Loader_Base
 	
-	call	loade_file
+	call	inode_loader
 
 	jmp	Loader_Base:Loader_Offset
-
-
 
 
 
