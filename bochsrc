@@ -183,7 +183,7 @@
 #  2.2.6 2.6Ghz Intel Core 2 Duo with WinXP/g++ 3.4       21 to 25 Mips
 #  2.2.6 2.1Ghz Athlon XP with Linux 2.6/g++ 3.4          12 to 15 Mips
 #=======================================================================
-cpu: model=core2_penryn_t9600, count=1, ips=50000000, reset_on_triple_fault=1, ignore_bad_msrs=1, msrs="msrs.def"
+cpu: model=core_duo_t2400_yonah, count=1, ips=50000000, reset_on_triple_fault=1, ignore_bad_msrs=1, msrs="msrs.def"
 cpu: cpuid_limit_winnt=0
 
 #=======================================================================
@@ -373,7 +373,7 @@ romimage: file=$BXSHARE/BIOS-bochs-latest
 # You now need to load a VGA ROM BIOS into C0000.
 #=======================================================================
 #vgaromimage: file=bios/VGABIOS-elpin-2.40
-vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
+#vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
 #vgaromimage: file=bios/VGABIOS-lgpl-latest-cirrus
 
 #=======================================================================
@@ -904,7 +904,7 @@ parport1: enabled=1, file="parport.out"
 # Example for different drivers:
 #   sound: waveoutdrv=sdl, waveindrv=alsa, midioutdrv=dummy
 #=======================================================================
-sound: driver=default, waveout=/dev/dsp. wavein=, midiout=
+# sound: driver=default, waveout=/dev/dsp. wavein=, midiout=
 
 #=======================================================================
 # SPEAKER:
@@ -1246,11 +1246,11 @@ log: bochsout.txt
 #第六步，开启或关闭某些功能
 #下面是关闭鼠标，并打开键盘
 mouse: enabled=0
-keyboard: keymap=keymaps/x11-pc-us.map
+keyboard: keymap=$BXSHARE/keymaps/x11-pc-us.map
 
 # 硬盘设置
 ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14 
-ata0-master: type=disk, path="hd60Mc.img", mode=flat, cylinders=121, heads=16, spt=63
+ata0-master: type=disk, path="c.img", mode=flat, cylinders=121, heads=16, spt=63
 
 #下面的是增加bochs对gdb的支持，这样gdb便可以远程连接到此机器的1234端口调试了
 #gdbstub:enabled=1, port=1234, text_base=0, data_base=0, bss_base=0	

@@ -36,7 +36,8 @@ boot:
 
 
     ; 对inode结构体的操作
-    ;inode是文件对应的索引节点,存放文件元数据,存储在磁盘的inode table中
+    ; inode是文件对应的索引节点,存放文件元数据,存储在磁盘的inode table中
+    ; ext2中根目录位于2号Inode
     mov eax , 2
     ; ext2 inode结构体可以理解为权限+block定位,共描述15个block;
     ; 其中0到11个是direct block,第十二个是indirect block
@@ -47,12 +48,14 @@ boot:
 
     mov word [disk_address_packet + 4], RootDir_Offset
     mov word [disk_address_packet + 6], RootDir_Base
-    mov eax , [es:bx+Inode_Blocks]
+    ; 获取根目录的开始扇区
+    mov eax , [es:bx+Inode_Block_Offset]
     add eax , eax
     mov dword [disk_address_packet + 8], eax
     mov dword [disk_address_packet+ 12],0        ;高32位为0
-
-    mov	eax, [es:bx + Inode_Blocks]
+    
+    ; 获取根目录占用的扇区数量
+    mov	eax, [es:bx + Inode_Blocks_Offset]
 	shr eax, 1
 	mov	cx,	ax
 	cmp cx, 12
@@ -66,6 +69,7 @@ root_loader:
 	je	loader_not_found
 	call	sector_reader
 	dec cx
+    ; 根据循环次数读取对应block,使用[es:bx]
 	add bx,4
 	mov	eax,[es:bx]
 	add eax,eax
@@ -79,18 +83,18 @@ root_search:
 	mov gs,eax
 	mov bx, RootDir_Offset
 ; 对比名字寻找loader
-loader_cmp:
+loader_length_cmp:
     xor cx,cx
 	mov cl, Loader_Name_Length
 	cmp cl, byte [gs:bx+Name_Len_Offset]
 	jnz loader_not_match
 	mov si,Loader_Name
 	push bx
-    ; lodsb指令将ds:si的一个字节装入al中,
-    ; 并根据DF标志位增减si
+
+; lodsb指令将ds:si的一个字节装入al中,
+; 并根据DF标志位增减si
 loop_cmp:
     lodsb
-    ; 以bx作为基址寄存器
     cmp al,  byte[gs:bx+File_Name_Offset]
 	jnz cmp_result
 	dec cl
@@ -99,6 +103,7 @@ loop_cmp:
 	jmp loop_cmp
 cmp_result:
     pop bx
+    ;  若cl为0,则循环到了最后,即文件名相同
 	cmp cl, 0
 	jnz loader_not_match
 	jmp loader_found
@@ -106,7 +111,7 @@ cmp_result:
 loader_not_match:
     add bx, word [gs:bx+Record_Length_Offset]
 	cmp bx,1024
-	jl root_search
+	jl loader_length_cmp
 	popa
 	jmp root_loader
 
@@ -129,7 +134,7 @@ loader_found:
 	mov word	[disk_address_packet + 4],	Loader_Offset
 	mov	word	[disk_address_packet + 6],	Loader_Base
 	
-	call	inode_loader
+	call	block_loader
 
 	jmp	Loader_Base:Loader_Offset
 

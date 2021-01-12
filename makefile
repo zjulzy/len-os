@@ -45,7 +45,11 @@ everything : $(LENBOOT) $(LENKERNEL)
 # 生成镜像文件
 image : everything clean buildimg
 
-buildimg : 
+buildimg : boot/boot.bin  boot/loader.bin
+	dd if=boot/boot.bin of=c.img bs=512 count=1 conv=notrunc 
+	sudo mount ./c.img /mnt/floppy
+	sudo cp boot/loader.bin /mnt/floppy
+	sudo umount /mnt/floppy
 
 # 生成boot和loader
 boot/boot.bin: boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc boot/include/boot_load.asm
