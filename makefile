@@ -5,7 +5,7 @@
 
 # kernel重新放置后的位置
 # 与/boot/include/loader.inc中保持一致
-ENTRYPOINT = 0X3000
+ENTRYPOINT = 0X10000
 # kernel入口偏移
 # 在对kernel.bin进行反汇编的时候会用到
 # 取决于 ENTRYPOINT
@@ -39,20 +39,21 @@ realclean :
 
 # 删除中间文件
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJS)
 # 生成引导文件和内核文件
 everything : $(LENBOOT) $(LENKERNEL)
 # 生成镜像文件
 image : everything clean buildimg
 
-buildimg : boot/boot.bin  boot/loader.bin
+buildimg : boot/boot.bin  boot/loader.bin kernel/kernel.bin
 	dd if=boot/boot.bin of=c.img bs=512 count=1 conv=notrunc 
 	sudo mount ./c.img /mnt/floppy
 	sudo cp boot/loader.bin /mnt/floppy
+	sudo cp kernel/kernel.bin /mnt/floppy
 	sudo umount /mnt/floppy
 
 # 生成boot和loader
-boot/boot.bin: boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc boot/include/boot_load.asm
+boot/boot.bin: boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc boot/include/boot_include.asm
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<
 boot/loader.bin:boot/loader.asm boot/include/loader.inc boot/include/pm.inc boot/include/loader_include.asm
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<

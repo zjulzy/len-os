@@ -10,7 +10,8 @@ jmp boot
 %include "boot.inc"
 ;Ext2磁盘相关信息
 %include "Ext2.inc"
-%include "boot_load.asm"      ;相关函数
+; 相关函数
+%include "boot_include.asm"     
 
 
 boot:
