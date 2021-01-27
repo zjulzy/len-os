@@ -6,7 +6,7 @@
 #include "global.h"
 #include "display.h"
 #include "memory.h"
-#include "interrupt_opinion.h"
+#include "interrupt_option.h"
 
 //初始化描述符
 void init_descriptor(DESCRIPTOR *p_desc, u32 base, u32 limit, u16 attribute);
@@ -31,4 +31,6 @@ u32 seg2phys(u16 seg);
 void init_gdt();
 void init_idt();
 void init_tss();
+void cstart();
+void *memcpy(void *pDst, void *pSrc, int iSize);
 #endif

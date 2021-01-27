@@ -2,8 +2,10 @@
 // 链接kernel.asm,定义在kernel.asm中使用的内核函数
 // ---------------------------------------------------------------
 #include "base.h"
+
 //layer=1
-void init_gdt(){
+void init_gdt()
+{
     //初始化新的gdt
     //将原来在loader中的gdt复制到新的gdt中
     //通过memory.asm定义的memcpy函数实现
@@ -18,11 +20,11 @@ void init_gdt(){
     //gdt初始化结束
 }
 
-void init_idt(){
+void init_idt()
+{
     //初始化中断开始---------------------------------------------------------------------
 
     //初始化中断结束---------------------------------------------------------------------
-
 
     //类似gdt的初始化方法,初始化idt
     // idt_ptr[6] 共 6 个字节：0~15:Limit  16~47:Base
@@ -32,7 +34,8 @@ void init_idt(){
     *p_idt_base = (u32)&idt;
 }
 
-void init_tss(){
+void init_tss()
+{
     memset(&tss, 0, sizeof(tss));
     tss.ss0 = SELECTOR_KERNEL_DS;
     init_descriptor(&gdt[INDEX_TSS],
@@ -41,4 +44,8 @@ void init_tss(){
                     //段属性
                     DA_386TSS);
     tss.iobase = sizeof(tss);
+}
+
+void cstart()
+{
 }
