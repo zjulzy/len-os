@@ -2,35 +2,40 @@
 //声明在base.h和kernel中定义的函数
 #ifndef LENOS_BASE_H
 #define LENOS_BASE_H
-//layer = 0
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 #include "global.h"
 #include "display.h"
 #include "memory.h"
 #include "interrupt_option.h"
 
-//初始化描述符
-void init_descriptor(DESCRIPTOR *p_desc, u32 base, u32 limit, u16 attribute);
-void hwint00();
-void hwint01();
-void hwint02();
-void hwint03();
-void hwint04();
-void hwint05();
-void hwint06();
-void hwint07();
-void hwint08();
-void hwint09();
-void hwint10();
-void hwint11();
-void hwint12();
-void hwint13();
-void hwint14();
-void hwint15();
+    //初始化描述符
+    void init_descriptor(DESCRIPTOR *p_desc, u32 base, u32 limit, u16 attribute);
+    void hwint00();
+    void hwint01();
+    void hwint02();
+    void hwint03();
+    void hwint04();
+    void hwint05();
+    void hwint06();
+    void hwint07();
+    void hwint08();
+    void hwint09();
+    void hwint10();
+    void hwint11();
+    void hwint12();
+    void hwint13();
+    void hwint14();
+    void hwint15();
 
-u32 seg2phys(u16 seg);
-void init_gdt();
-void init_idt();
-void init_tss();
-void cstart();
-void *memcpy(void *pDst, void *pSrc, int iSize);
+    u32 seg2phys(u16 seg);
+    void init_gdt();
+    void init_idt();
+    void init_tss();
+    void *memcpy(void *pDst, void *pSrc, int iSize);
+#ifdef __cplusplus
+}
+#endif
 #endif

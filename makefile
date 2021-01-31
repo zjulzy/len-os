@@ -14,19 +14,23 @@ ENTRYOFFSET	=   0x400
 ASM = nasm
 DASM = ndisasm
 
-GCC = g++
+GCC = gcc
 LD = ld
-INCLUDE_PATH = -I include/essential/ -l include/display
+INCLUDE_PATH = -I include/essential/ -I include/interrupt/  -I include/iosystem/   -I include/process/
+
 # boot和kernel汇编flag
 BOOT_ASM_FLAG = -I boot/include
-KERNEL_ASM_FLAG = -I kernel/include
-C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32 -fno-stack-protector
+KERNEL_ASM_FLAG = -I kernel/ -f elf
+OBJS_ASM_FLAG = -f elf
+# -c指定只编译不链接
+C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32  -g
+LD_FLAGS  = -s -Ttext $(ENTRYPOINT) -m elf_i386 
+
 # 目标文件定义
 LENBOOT= boot/boot.bin boot/loader.bin
 LENKERNEL = kernel/kernel.bin
 #中间文件定义
-OBJS = kernel/kernel.o  lib/essential/proto.o lib/interrupt/intertupt.o lib/interrupt/interrupt_option.o \
-		kernel/kernel_cpp.o
+OBJS = kernel/kernel.o kernel/kernel_cpp.o lib/essential/global.o lib/essential/memory.o
 KERNEL = kernel/kernel.bin
 # 本makefile支持的所有操作
 .PHONY : initialize everything clean buildimg realclean image disasm
@@ -37,7 +41,7 @@ initialize : image
 
 # 删除所有文件
 realclean : 
-	rm -f $(OBJ) $(LENBOOT) $(LENKERNEL)
+	rm -f $(OBJS) $(LENBOOT) $(LENKERNEL)
 
 # 删除中间文件
 clean:
@@ -61,12 +65,23 @@ boot/loader.bin:boot/loader.asm boot/include/loader.inc boot/include/pm.inc boot
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<
 
 # 生成内核
-kernel/kernel.o : kernel/kernel.asm 
+kernel/kernel.o : kernel/kernel.asm kernel/kernel.inc
 	$(ASM)  $(KERNEL_ASM_FLAG) -o $@ $< 
 
-kernel/kernel_cpp.o : kernel/kernel.cpp
+kernel/kernel_cpp.o : kernel/kernel.cc
 	$(GCC)  $(C_FLAGS) -o $@ $<
+
+$(KERNEL):$(OBJS)
+	$(LD)  $(LD_FLAGS) -o $@ $^
+
+# 生成中间文件
+
+lib/essential/global.o :lib/essential/global.cc
+	$(GCC) $(C_FLAGS) -o $@ $<
 
 lib/essential/proto.o: lib/essential/proto.asm
 	$(ASM) $(KERNEL_ASM_FLAG ) -o $@ $<
+
+lib/essential/memory.o: lib/essential/memory.asm
+	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
 
