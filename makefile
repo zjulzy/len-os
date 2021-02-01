@@ -25,6 +25,7 @@ OBJS_ASM_FLAG = -f elf
 # -c指定只编译不链接
 C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32  -g
 LD_FLAGS  = -s -Ttext $(ENTRYPOINT) -m elf_i386 
+LD_GDB_FLAGS = -s -Ttext $(ENTRYPOINT) -m elf_i386 
 
 # 目标文件定义
 LENBOOT= boot/boot.bin boot/loader.bin
