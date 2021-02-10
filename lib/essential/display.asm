@@ -1,12 +1,16 @@
 ; 显示函数
+
 [SECTION .text]
+extern disp_pos
+global disp_str
+global disp_int
 ; ------------------------------------------------------------------------
 ;	DispStr
 ; 	显示一个字符串
 ;	通过堆栈传递一个4字节字符串起始位置变量
 ;	字符串结尾用0来标识
 ; ------------------------------------------------------------------------
-DispStr:
+disp_str:
 	push	ebp              ; 从堆栈中取出字符串
 	mov	ebp, esp
 	push	ebx
@@ -14,7 +18,7 @@ DispStr:
 	push	edi
 
 	mov	esi, [ebp + 8]
-	mov	edi, [Mem_Disp_Pos]
+	mov	edi, [disp_pos]
 	mov	ah, 0Fh
 
 .1:
@@ -43,7 +47,7 @@ DispStr:
 	jmp	.1
 
 .2:
-	mov	[Mem_Disp_Pos], edi
+	mov	[disp_pos], edi
 
 	pop	edi
 	pop	esi
@@ -52,15 +56,7 @@ DispStr:
 	ret
 ; DispStr 结束------------------------------------------------------------
 
-; ---------------------------------------------------------------------------
-; DispReturn换行
-DispReturn:
-	push	Char_Return
-	call	DispStr			
-	add	esp, 4
 
-	ret
-; ---------------------------------------------------------------------------
 
 ; ------------------------------------------------------------------------
 ; DispAL显示 AL 中的数字
@@ -70,7 +66,7 @@ DispAL:
 	push	edx
 	push	edi
 
-	mov	edi, [Mem_Disp_Pos]
+	mov	edi, [disp_pos]
 
 	mov	ah, 0Fh			; 0000b: 黑底    1111b: 白字
 	mov	dl, al
@@ -98,7 +94,7 @@ display:
 	mov	al, dl
 	loop	num_trans
 
-	mov	[Mem_Disp_Pos], edi
+	mov	[disp_pos], edi
 
 	pop	edi
 	pop	edx
@@ -110,7 +106,7 @@ display:
 ; ------------------------------------------------------------------------------
 ; DispInt:显示一个整形数
 ; ------------------------------------------------------------------------------
-DispInt:
+disp_int:
 	mov	eax, [esp + 4]
 	shr	eax, 24
 	call	DispAL
@@ -129,10 +125,10 @@ DispInt:
 	mov	ah, 07h			; 0000b: 黑底    0111b: 灰字
 	mov	al, 'h'
 	push	edi
-	mov	edi, [Mem_Disp_Pos]
+	mov	edi, [disp_pos]
 	mov	[gs:edi], ax
 	add	edi, 4
-	mov	[Mem_Disp_Pos], edi
+	mov	[disp_pos], edi
 	pop	edi
 
 	ret

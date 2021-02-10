@@ -9,10 +9,12 @@ extern "C"
 #include "global.h"
 #include "display.h"
 #include "memory.h"
-#include "interrupt_option.h"
+#include "interrupt.h"
 
     //初始化描述符
     void init_descriptor(DESCRIPTOR *p_desc, u32 base, u32 limit, u16 attribute);
+    void init_idt_description(unsigned char vector, u8 desc_type, int_handler handler, unsigned char privilege);
+    //中断芯片相关的外中断
     void hwint00();
     void hwint01();
     void hwint02();
@@ -30,11 +32,30 @@ extern "C"
     void hwint14();
     void hwint15();
 
+    void divide_error();
+    void single_step_exception();
+    void nmi();
+    void breakpoint_exception();
+    void overflow();
+    void bounds_check();
+    void invalid_opcode();
+    void copr_not_available();
+    void double_fault();
+    void copr_seg_overrun();
+    void invalid_tss();
+    void segment_not_present();
+    void stack_exception();
+    void general_protection();
+    void page_fault();
+    void copr_error();
+
     u32 seg2phys(u16 seg);
     void init_gdt();
     void init_idt();
     void init_tss();
-    void *memcpy(void *pDst, void *pSrc, int iSize);
+
+    void exception_handler(int err_vec, int err_code, int eip, int cs, int eflags);
+    void i8259_handler(int code);
 #ifdef __cplusplus
 }
 #endif

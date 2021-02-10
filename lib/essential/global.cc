@@ -4,7 +4,7 @@
 
 #include "global.h"
 //当前屏幕指针位置
-int disp_pos;
+int disp_pos = 0;
 
 //kernel中使用的gdt指针
 //描述符

@@ -11,6 +11,9 @@
     extern init_idt
     extern init_tss
     extern init_proc
+    extern init_8259A
+    extern exception_handler
+    extern i8259_handler
 
 ; 导出中断处理函数
     global  hwint00
@@ -29,6 +32,22 @@
     global  hwint13
     global  hwint14
     global  hwint15
+    global divide_error;
+    global single_step_exception;
+    global nmi;
+    global breakpoint_exception;
+    global overflow;
+    global bounds_check;
+    global invalid_opcode;
+    global copr_not_available;
+    global double_fault;
+    global copr_seg_overrun;
+    global invalid_tss;
+    global segment_not_present;
+    global stack_exception;
+    global general_protection;
+    global page_fault;
+    global copr_error;
 ; -------------------------------------------------------------------------------------
 ; 堆栈段
 [SECTION .bss]
@@ -51,13 +70,14 @@ _start:
     ;打开中断
     call init_idt
     lidt  [idt_ptr]
-    jmp $
     ; 强制使用刚刚初始化的结构
-    ; jmp SELECTOR_KERNEL_CS:kernel_start
+    jmp SELECTOR_KERNEL_CS:kernel_start
 ; --------------------------------------------------------------------------------------------
 
-; kernel_start:
-;     ; 初始化tss
+kernel_start:
+    sti
+    hlt
+    ; 初始化tss
 ;     call init_tss
 ;     xor	eax, eax
 ; 	mov	ax, SELECTOR_TSS
@@ -67,6 +87,7 @@ _start:
 ;     call init_proc
 ;     jmp$
 ;     ; 系统内核初始化结束
+; -------------------------------------------------------------
 ; sys_call:
 
 ; ALIGN 16
@@ -76,22 +97,153 @@ _start:
     
 ;     iretd
 
-; ; 中断返回函数,完成特权级的切换
-; hwint01:
-; hwint02:
-; hwint03:
-; hwint04:
-; hwint05:
-; hwint06:
-; hwint07:
-; hwint08:
-; hwint09:
-; hwint10:
-; hwint11:
-; hwint12:
-; hwint13:
-; hwint14:
-; hwint15:
+; 中断返回函数,完成特权级的切换
+align 16
+hwint00:
+    push 0
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint01:
+    push 1
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint02:
+    push 2
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint03:
+    push 3
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint04:
+    push 4
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint05:
+    push 5
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint06:
+    push 6
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint07:
+    push 7
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint08:
+    push 8
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint09:
+    push 9
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint10:
+    push 10
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint11:
+    push 11
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint12:
+    push 12
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint13:
+    push 13
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint14:
+    push 14
+    call i8259_handler
+    add esp, 2
+    hlt
+hwint15:
+    push 15
+    call i8259_handler
+    add esp, 2
+    hlt
+
+; 支持的异常列表
+; 没有错误码需要压栈0xFFFFFFFF
+divide_error:
+    push 0xFFFFFFFF
+    push 0
+    jmp exception
+single_step_exception:
+    push 0xFFFFFFFF
+    push 1
+    jmp exception
+nmi:
+    push 0xFFFFFFFF
+    push 2
+    jmp exception
+breakpoint_exception:
+    push 0xFFFFFFFF
+    push 3
+    jmp exception
+overflow:
+    push 0xFFFFFFFF
+    push 4
+    jmp exception
+bounds_check:
+    push 0xFFFFFFFF
+    push 5
+    jmp exception
+invalid_opcode:
+    push 0xFFFFFFFF
+    push 6
+    jmp exception
+copr_not_available:
+    push 0xFFFFFFFF
+    push 7
+    jmp exception
+double_fault:
+    push 8
+    jmp exception
+copr_seg_overrun:
+    push 0xFFFFFFFF
+    push 9
+    jmp exception
+invalid_tss:
+    push 10
+    jmp exception
+segment_not_present:
+    push 11
+    jmp exception
+stack_exception:
+    push 12
+    jmp exception
+general_protection:
+    push 13
+    jmp exception
+page_fault:
+    push 14
+    jmp exception
+copr_error:
+    push 0xFFFFFFFF
+    push 16
+    jmp exception
+exception:
+    call exception_handler
+    add esp,  4*2
+    hlt
 
 ; restart:
 ;     mov  esp , [proc_queen1_head]

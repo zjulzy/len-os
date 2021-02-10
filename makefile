@@ -16,22 +16,28 @@ DASM = ndisasm
 
 GCC = gcc
 LD = ld
-INCLUDE_PATH = -I include/essential/ -I include/interrupt/  -I include/iosystem/   -I include/process/
+INCLUDE_PATH = -I include/essential/ -I include/interrupt/  \
+ -I include/iosystem/   -I include/process/
 
 # boot和kernel汇编flag
 BOOT_ASM_FLAG = -I boot/include
 KERNEL_ASM_FLAG = -I kernel/ -f elf
 OBJS_ASM_FLAG = -f elf
 # -c指定只编译不链接
-C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -m32  -g
+# -fno-stack-protector指定不需要调用栈检查
+C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -fno-stack-protector -m32  -g
 LD_FLAGS  = -s -Ttext $(ENTRYPOINT) -m elf_i386 
-LD_GDB_FLAGS = -s -Ttext $(ENTRYPOINT) -m elf_i386 
+
+# 使用gdb进行调试时，需要打开gcc -g并关闭ld -s选项，同时使用gdb在编译好的kernel.bin文件中设置断点
+# 在bochsrc文件中设置使用gdb调试，开启bochs之后使用gdbgui等工具连接1234端口即可进行调试
+LD_GDB_FLAGS = -Ttext $(ENTRYPOINT) -m elf_i386 
 
 # 目标文件定义
 LENBOOT= boot/boot.bin boot/loader.bin
 LENKERNEL = kernel/kernel.bin
 #中间文件定义
-OBJS = kernel/kernel.o kernel/kernel_cpp.o lib/essential/global.o lib/essential/memory.o
+OBJS = kernel/kernel.o kernel/kernel_cpp.o lib/essential/base.o lib/essential/display.o lib/essential/global.o lib/essential/memory.o \
+			lib/interrupt/interrupt.o lib/essential/proto.o
 KERNEL = kernel/kernel.bin
 # 本makefile支持的所有操作
 .PHONY : initialize everything clean buildimg realclean image disasm
@@ -84,5 +90,17 @@ lib/essential/proto.o: lib/essential/proto.asm
 	$(ASM) $(KERNEL_ASM_FLAG ) -o $@ $<
 
 lib/essential/memory.o: lib/essential/memory.asm
+	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
+
+lib/essential/display.o :lib/essential/display.asm
+	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
+
+lib/essential/base.o : lib/essential/base.cc
+	$(GCC) $(C_FLAGS) -o $@ $<
+
+lib/interrupt/interrupt.o:lib/interrupt/interrupt.cc
+	$(GCC) $(C_FLAGS) -o $@ $<
+
+lib/essential/proto.o : lib/essential/proto.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
 

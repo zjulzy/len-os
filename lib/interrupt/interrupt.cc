@@ -1,13 +1,14 @@
 #include "interrupt.h"
 #include "const.h"
 // 初始化时钟中断
-void interruptInitialize(){
-
+void interruptInitialize()
+{
 }
 
 //初始化8259A,操作顺序不可逆转
 //依次向主片和从片中写入ICW1,ICW2,ICW3,ICW4
-void init_8259A() {
+void init_8259A()
+{
     // Master 8259, ICW1
     out_byte(INT_M_CTL, 0x11);
 
@@ -37,8 +38,8 @@ void init_8259A() {
     out_byte(INT_S_CTLMASK, 0x1);
 
     // Master 8259, OCW1
-    // 主芯片关闭所有中断
-    out_byte(INT_M_CTLMASK, 0xFF);
+    // 主芯片关闭所有中断,除了键盘
+    out_byte(INT_M_CTLMASK, 0xFD);
 
     // Slave  8259, OCW1
     //从芯片关闭所有中断
