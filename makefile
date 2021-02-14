@@ -36,8 +36,10 @@ LD_GDB_FLAGS = -Ttext $(ENTRYPOINT) -m elf_i386
 LENBOOT= boot/boot.bin boot/loader.bin
 LENKERNEL = kernel/kernel.bin
 #中间文件定义
-OBJS = kernel/kernel.o kernel/kernel_cpp.o lib/essential/base.o lib/essential/display.o lib/essential/global.o lib/essential/memory.o \
-			lib/interrupt/interrupt.o lib/essential/proto.o
+OBJS = kernel/kernel.o kernel/kernel_cpp.o lib/essential/base.o lib/essential/display.o\
+ 			lib/essential/global.o lib/essential/memory.o \
+			lib/interrupt/interrupt.o lib/essential/proto.o \
+			lib/process/process.o
 KERNEL = kernel/kernel.bin
 # 本makefile支持的所有操作
 .PHONY : initialize everything clean buildimg realclean image disasm
@@ -103,4 +105,6 @@ lib/interrupt/interrupt.o:lib/interrupt/interrupt.cc
 
 lib/essential/proto.o : lib/essential/proto.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
+lib/process/process.o : lib/process/process.cc
+	$(GCC) $(C_FLAGS) -o $@ $<
 

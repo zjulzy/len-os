@@ -3,6 +3,16 @@
 // ---------------------------------------------------------------
 
 #include "base.h"
+void kernel_main()
+{
+    disp_str("-----\"kernel_main\" begins-----\n");
+
+    init_proc();
+    restart();
+    while (1)
+    {
+    }
+}
 
 void init_gdt()
 {
@@ -17,6 +27,8 @@ void init_gdt()
     u32 *p_gdt_base = (u32 *)(&gdt_ptr[2]);
     *p_gdt_limit = GDT_SIZE * sizeof(DESCRIPTOR) - 1;
     *p_gdt_base = (u32)&gdt;
+    init_descriptor(&gdt[INDEX_LDT_FIRST], vir2phy(seg2phys(SELECTOR_KERNEL_RW), proc_table[0].ldts), LDT_SIZE * sizeof(DESCRIPTOR) - 1, DA_LDT);
+
     //gdt初始化结束
     disp_str("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
              "gdb change");
@@ -135,14 +147,38 @@ void init_idt()
     disp_str("\n idt change\n");
 }
 
-// void init_tss()
-// {
-//     memset(&tss, 0, sizeof(tss));
-//     tss.ss0 = SELECTOR_KERNEL_DS;
-//     init_descriptor(&gdt[INDEX_TSS],
-//                     vir2phys(seg2phys(SELECTOR_KERNEL_DS), &tss),
-//                     sizeof(tss) - 1,
-//                     //段属性
-//                     DA_386TSS);
-//     tss.iobase = sizeof(tss);
-// }
+void init_tss()
+{
+    memset(&tss, 0, sizeof(tss));
+    tss.ss0 = SELECTOR_KERNEL_RW;
+    init_descriptor(&gdt[INDEX_TSS],
+                    vir2phy(seg2phys(SELECTOR_KERNEL_RW), &tss),
+                    sizeof(tss) - 1,
+                    //段属性
+                    DA_386TSS);
+    tss.iobase = sizeof(tss); //没有io许可位图
+    disp_str("tss initialized");
+}
+
+void delay(int time)
+{
+    for (int i = 0; i < time; i++)
+    {
+        for (int j = 0; j < 1000; j++)
+        {
+            for (int k = 0; k < 1000; k++)
+            {
+            }
+        }
+    }
+}
+
+void process_proto()
+{
+    while (1)
+    {
+
+        disp_str("A");
+        delay(10);
+    }
+}

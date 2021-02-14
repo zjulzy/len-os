@@ -15,3 +15,7 @@ DESCRIPTOR gdt[GDT_SIZE];
 // 0~15:Limit  16~47:Base 共48位
 u8 idt_ptr[6];
 GATE idt[IDT_SIZE];
+TSS tss;
+PROCESS proc_table[NR_TASK];
+PROCESS *p_proc_ready;
+char task_stack[STACK_SIZE_TOTAL];

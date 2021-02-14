@@ -32,6 +32,10 @@
 #define PRIVILEGE_KRNL 0
 #define PRIVILEGE_TASK 1
 #define PRIVILEGE_USER 3
+//RPL
+#define RPL_KRNL SA_RPL0
+#define RPL_TASK SA_RPL1
+#define RPL_USER SA_RPL3
 //===================================================
 //定义函数类型
 #define PUBLIC
@@ -43,6 +47,7 @@
 //每个进程允许使用的ldt数目
 #define LDT_SIZE 2
 
+#define NR_TASK 1
 //===========================================================
 //GDT相关
 //描述符索引,用于在c文件中确定选择子对应的描述符数组下标
@@ -58,9 +63,12 @@
 #define SELECTOR_FLAT_C 0x08
 #define SELECTOR_FLAT_RW 0x10
 #define SELECTOR_VIDEO (0x18 + 3)
+#define SELECTOR_TSS 0x20
+#define SELECTOR_LDT_FIRST 0x28
+
 #define SELECTOT_KERNEL_C SELECTOR_FLAT_C
 #define SELECTOR_KERNEL_RW SELECTOR_FLAT_RW
-
+#define SELECTOR_KERNEL_GS SELECTOR_VIDEO
 //===========================================================
 //线性地址转为物理地址
 #define vir2phy(seg_base, vir) (u32)(((u32)seg_base) + (u32)vir)
@@ -80,6 +88,16 @@
 #define DAC_E 0x98    /* 存在的只执行代码段属性值		*/
 #define DAC_ER 0x9A   /* 存在的可执行可读代码段属性值		*/
 #define DAC_ECO 0x9C  /* 存在的只执行一致代码段属性值 */
-#define DAC_ECRO 0x9E /* 存在的可执行可读一致代码段属性值	*/
+#define DAC_ECOR 0x9E /* 存在的可执行可读一致代码段属性值	*/
 
+//选择子属性定义
+#define SA_RPL_MASK 0xFFFC
+#define SA_RPL0 0
+#define SA_RPL1 1
+#define SA_RPL2 2
+#define SA_RPL3 3
+
+#define SA_TI_MASK 0xFFFB
+#define SA_TIG 0
+#define SA_TIL 4
 #endif

@@ -6,6 +6,7 @@
 extern "C"
 {
 #endif
+#include "protect.h"
 #include "global.h"
 #include "display.h"
 #include "memory.h"
@@ -14,6 +15,7 @@ extern "C"
     //初始化描述符
     void init_descriptor(DESCRIPTOR *p_desc, u32 base, u32 limit, u16 attribute);
     void init_idt_description(unsigned char vector, u8 desc_type, int_handler handler, unsigned char privilege);
+    void restart();
     //中断芯片相关的外中断
     void hwint00();
     void hwint01();
@@ -53,9 +55,10 @@ extern "C"
     void init_gdt();
     void init_idt();
     void init_tss();
-
     void exception_handler(int err_vec, int err_code, int eip, int cs, int eflags);
     void i8259_handler(int code);
+    void process_proto();
+    void kernel_main();
 #ifdef __cplusplus
 }
 #endif

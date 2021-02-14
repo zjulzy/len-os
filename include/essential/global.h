@@ -5,6 +5,7 @@ extern "C"
 {
 #endif
 //定义全局变量
+#include "process.h"
 #include "protect.h"
 
     extern int disp_pos;
@@ -18,16 +19,22 @@ extern "C"
     extern u8 idt_ptr[6];
     extern GATE idt[IDT_SIZE];
 
-    //使用多级循环队列来实现进程调度
-    extern PROCESS *process_queen1_head;
-    extern PROCESS process_queen1_tail;
-    extern PROCESS *process_queen2_head;
-    extern PROCESS process_queen2_tail;
-    extern PROCESS *process_queen3_head;
-    extern PROCESS process_queen3_tail;
-    //阻塞状态队列
-    extern PROCESS *process_blocked_head;
-    extern PROCESS process_blocked_tail;
+    //tss定义
+    extern TSS tss;
+
+    extern PROCESS proc_table[];
+    extern char task_stack[];
+    extern PROCESS *p_proc_ready;
+    // //使用多级循环队列来实现进程调度
+    // extern PROCESS *process_queen1_head;
+    // extern PROCESS process_queen1_tail;
+    // extern PROCESS *process_queen2_head;
+    // extern PROCESS process_queen2_tail;
+    // extern PROCESS *process_queen3_head;
+    // extern PROCESS process_queen3_tail;
+    // //阻塞状态队列
+    // extern PROCESS *process_blocked_head;
+    // extern PROCESS process_blocked_tail;
 
 #ifdef __cplusplus
 }

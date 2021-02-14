@@ -1,10 +1,14 @@
 %include "kernel.inc"
 
 
+
 ; 导入全局变量
     extern gdt_ptr
     extern idt_ptr
     extern disp_pos
+    extern p_proc_ready
+    extern tss
+    
 
 ; 导入kernel.cpp函数
     extern init_gdt       ;将gdt_ptr指向新的GDT
@@ -14,7 +18,9 @@
     extern init_8259A
     extern exception_handler
     extern i8259_handler
+    extern kernel_main
 
+    global restart
 ; 导出中断处理函数
     global  hwint00
     global  hwint01
@@ -48,6 +54,34 @@
     global general_protection;
     global page_fault;
     global copr_error;
+
+[SECTION .data]
+; pcb中寄存器存储位置定义
+    P_STACKBASE	equ	0
+    GSREG		equ	P_STACKBASE
+    FSREG		equ	GSREG		+ 4
+    ESREG		equ	FSREG		+ 4
+    DSREG		equ	ESREG		+ 4
+    EDIREG		equ	DSREG		+ 4
+    ESIREG		equ	EDIREG		+ 4
+    EBPREG		equ	ESIREG		+ 4
+    KERNELESPREG	equ	EBPREG		+ 4
+    EBXREG		equ	KERNELESPREG	+ 4
+    EDXREG		equ	EBXREG		+ 4
+    ECXREG		equ	EDXREG		+ 4
+    EAXREG		equ	ECXREG		+ 4
+    RETADR		equ	EAXREG		+ 4
+    EIPREG		equ	RETADR		+ 4
+    CSREG		equ	EIPREG		+ 4
+    EFLAGSREG	equ	CSREG		+ 4
+    ESPREG		equ	EFLAGSREG	+ 4
+    SSREG		equ	ESPREG		+ 4
+    P_STACKTOP	equ	SSREG		+ 4
+    P_LDT_SEL	equ	P_STACKTOP
+    P_LDT		equ	P_LDT_SEL	+ 4
+
+    TSS3_S_SP0	equ	4
+; 数据段结束----------------------------------------------------------------------------
 ; -------------------------------------------------------------------------------------
 ; 堆栈段
 [SECTION .bss]
@@ -70,13 +104,17 @@ _start:
     ;打开中断
     call init_idt
     lidt  [idt_ptr]
+    call init_tss
     ; 强制使用刚刚初始化的结构
     jmp SELECTOR_KERNEL_CS:kernel_start
-; --------------------------------------------------------------------------------------------
+; --------------------------------------------------------------------------------
 
 kernel_start:
-    sti
-    hlt
+    xor	eax, eax
+	mov	ax, SELECTOR_TSS
+	ltr	ax
+
+    jmp kernel_main
     ; 初始化tss
 ;     call init_tss
 ;     xor	eax, eax
@@ -100,10 +138,7 @@ kernel_start:
 ; 中断返回函数,完成特权级的切换
 align 16
 hwint00:
-    push 0
-    call i8259_handler
-    add esp, 2
-    hlt
+    iret
 hwint01:
     push 1
     call i8259_handler
@@ -245,12 +280,30 @@ exception:
     add esp,  4*2
     hlt
 
+restart:
+	mov	esp, [p_proc_ready]
+	lldt	[esp + P_LDT_SEL] 
+	lea	eax, [esp + P_STACKTOP]
+	mov	dword [tss + TSS3_S_SP0], eax
+
+	pop	gs
+	pop	fs
+	pop	es
+	pop	ds
+	popad
+
+	add	esp, 4
+
+	iretd
+
+
 ; restart:
 ;     mov  esp , [proc_queen1_head]
 ;     lldt	[esp + P_LDT_SEL]
 ; 	lea	eax, [esp + P_STACKTOP]
 ; 	mov	dword [tss + TSS3_S_SP0], eax
-;     dec	dword [k_reenter]
+;     dec	dword [k_reenter].
+    
 ; 	pop	gs
 ; 	pop	fs
 ; 	pop	es

@@ -1,5 +1,3 @@
-
-
 #include "base.h"
 
 void init_descriptor(DESCRIPTOR *p_desc, u32 base, u32 limit, u16 attribute)

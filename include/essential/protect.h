@@ -2,7 +2,6 @@
 #ifndef LENOS_PROTECT_H
 #define LENOS_PROTECT_H
 
-#endif
 //layer==-2
 #include "type.h"
 #include "const.h"
@@ -148,3 +147,5 @@ typedef struct s_tss
     u16 trap;
     u16 iobase; // I/O位图基址大于或等于TSS段界限，就表示没有I/O许可位图
 } TSS;
+
+#endif
