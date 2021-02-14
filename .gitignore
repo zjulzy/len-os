@@ -1,6 +1,6 @@
 /build/
 /.idea
-/bochsout.txt
+bochsout.txt
 /.vscode
-/c.img
+*.img
 /test
