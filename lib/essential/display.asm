@@ -4,6 +4,7 @@
 extern disp_pos
 global disp_str
 global disp_int
+global disp_clear
 ; ------------------------------------------------------------------------
 ;	DispStr
 ; 	显示一个字符串
@@ -133,3 +134,31 @@ disp_int:
 
 	ret
 ; DispInt 结束------------------------------------------------------------
+
+
+; DispClear 清空屏幕-------------------------------------------------------
+disp_clear:
+	push	ecx
+	push	edx
+	push	edi
+
+	mov edi, 0
+	mov	ah, 0Fh			; 0000b: 黑底    1111b: 白字
+	mov ecx, 80*25
+	mov al, ' '
+
+clear_process:
+	mov	[gs:edi], ax
+	add	edi, 2
+
+	loop clear_process
+
+	mov edi, (80 * 0 + 0) * 2
+	mov	dword [disp_pos], edi
+
+	pop	edi
+	pop	edx
+	pop	ecx
+
+	ret
+; -----------------------------------------------------------------------

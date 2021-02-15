@@ -19,6 +19,7 @@
     extern exception_handler
     extern i8259_handler
     extern kernel_main
+    extern disp_str
 
     global restart
 ; 导出中断处理函数
@@ -81,6 +82,15 @@
     P_LDT		equ	P_LDT_SEL	+ 4
 
     TSS3_S_SP0	equ	4
+
+    ; 定义主从中断芯片的控制端口
+    INT_MASTER_CTL    equ 0x20
+    INT_MASTER_CTLMASK   equ  0x21
+    INT_SLAVE_CTL   equ  0xA0
+    INT_SLAVE_CTLMASK   equ  0xA1
+    EOI  equ  0x20
+    ClockMessage  db   "zawarudo"
+
 ; 数据段结束----------------------------------------------------------------------------
 ; -------------------------------------------------------------------------------------
 ; 堆栈段
@@ -128,17 +138,49 @@ kernel_start:
 ; -------------------------------------------------------------
 ; sys_call:
 
-; ALIGN 16
-; hwint00:
-;     mov  al ,  EOI
-;     out   INT_MASTER_CTL , al 
-    
-;     iretd
-
 ; 中断返回函数,完成特权级的切换
-align 16
+ALIGN 16
 hwint00:
-    iret
+    ; 保存现场
+    sub esp,4
+    pushad
+    push ds
+    push es
+    push fs 
+    push gs
+
+    
+    ; 令es和ds指向ss同样的位置
+    mov dx,ss 
+    mov ds,dx 
+    mov es,dx 
+    ; 切换到内核栈
+    mov esp, StackTop
+    
+
+    mov  al ,  EOI
+    out   INT_MASTER_CTL , al 
+    push ClockMessage
+    call disp_str
+    add esp,4
+
+    mov esp,[p_proc_ready]
+
+    ; 在tss中指定下一次由ring1切换到ring0的esp
+    lea eax,[esp+P_STACKTOP]
+    mov dword  [tss+TSS3_S_SP0],eax
+    
+    ;恢复寄存器的值
+    pop gs 
+    pop fs 
+    pop es
+    pop ds 
+    popad
+    add esp,4
+
+    iretd
+
+
 hwint01:
     push 1
     call i8259_handler

@@ -38,8 +38,8 @@ void init_8259A()
     out_byte(INT_S_CTLMASK, 0x1);
 
     // Master 8259, OCW1
-    // 主芯片关闭所有中断,除了键盘
-    out_byte(INT_M_CTLMASK, 0xFD);
+    // 主芯片关闭所有中断,除了时钟中断
+    out_byte(INT_M_CTLMASK, 0xFE);
 
     // Slave  8259, OCW1
     //从芯片关闭所有中断

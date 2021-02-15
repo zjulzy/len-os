@@ -88,8 +88,6 @@ $(KERNEL):$(OBJS)
 lib/essential/global.o :lib/essential/global.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
-lib/essential/proto.o: lib/essential/proto.asm
-	$(ASM) $(KERNEL_ASM_FLAG ) -o $@ $<
 
 lib/essential/memory.o: lib/essential/memory.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<

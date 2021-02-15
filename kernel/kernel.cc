@@ -157,7 +157,7 @@ void init_tss()
                     //段属性
                     DA_386TSS);
     tss.iobase = sizeof(tss); //没有io许可位图
-    disp_str("tss initialized");
+    disp_str("tss initialized\n");
 }
 
 void delay(int time)
