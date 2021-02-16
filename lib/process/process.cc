@@ -61,22 +61,35 @@
 void init_proc()
 {
     PROCESS *p_process = proc_table;
-    p_process->ldt_sel = SELECTOR_LDT_FIRST;
-    memcpy(&p_process->ldts[0], &gdt[SELECTOT_KERNEL_C >> 3], sizeof(DESCRIPTOR));
-    p_process->ldts[0].attr1 = DAC_E | PRIVILEGE_TASK << 5;
-    memcpy(&p_process->ldts[1], &gdt[SELECTOR_KERNEL_RW >> 3], sizeof(DESCRIPTOR));
-    p_process->ldts[1].attr1 = DAD_RW | PRIVILEGE_TASK << 5;
+    TASK *p_task = task_table;
+    u16 selector_ldt = SELECTOR_LDT_FIRST;
+    u32 remain_stack_size = STACK_SIZE_TOTAL;
+    for (int i = 0; i < NR_TASK; i++)
+    {
 
-    p_process->regs.cs = (0 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
-    p_process->regs.ds = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
-    p_process->regs.es = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
-    p_process->regs.fs = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
-    p_process->regs.ss = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
-    p_process->regs.gs = (SELECTOR_KERNEL_GS & SA_RPL_MASK) | RPL_TASK;
-    p_process->regs.eip = (u32)process_proto;
-    p_process->regs.esp = (u32)task_stack + STACK_SIZE_TOTAL;
-    p_process->regs.eflags = 0x1202; // IF=1, IOPL=1, bit 2 is always 1.
+        p_process->pid = p_task->pid;
+        p_process->ldt_sel = selector_ldt;
 
+        memcpy(&p_process->ldts[0], &gdt[SELECTOT_KERNEL_C >> 3], sizeof(DESCRIPTOR));
+        p_process->ldts[0].attr1 = DAC_E | PRIVILEGE_TASK << 5;
+        memcpy(&p_process->ldts[1], &gdt[SELECTOR_KERNEL_RW >> 3], sizeof(DESCRIPTOR));
+        p_process->ldts[1].attr1 = DAD_RW | PRIVILEGE_TASK << 5;
+
+        p_process->regs.cs = (0 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
+        p_process->regs.ds = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
+        p_process->regs.es = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
+        p_process->regs.fs = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
+        p_process->regs.ss = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
+        p_process->regs.gs = (SELECTOR_KERNEL_GS & SA_RPL_MASK) | RPL_TASK;
+        p_process->regs.eip = (u32)(p_task->initial_eip);
+        p_process->regs.esp = (u32)task_stack + remain_stack_size;
+        p_process->regs.eflags = 0x1202; // IF=1, IOPL=1, bit 2 is always 1.+
+
+        p_process++;
+        p_task++;
+        selector_ldt += 1 << 3;
+        remain_stack_size -= p_task->stacksize;
+    }
     p_proc_ready = proc_table;
 }
 //通过task初始化一个pcb,传入pcb地址,初始化pcb结构数据
@@ -121,3 +134,45 @@ void init_proc()
 //     //设置eflages,将IF和IOPL置1,在中断返回时开中断
 //     proc->regs.eflags = 0x1202;
 // }
+
+void delay(int time)
+{
+    for (int i = 0; i < time; i++)
+    {
+        for (int j = 0; j < 100; j++)
+        {
+            for (int k = 0; k < 1000; k++)
+            {
+            }
+        }
+    }
+}
+
+void process_proto()
+{
+    while (1)
+    {
+
+        disp_str("2333");
+        delay(10);
+    }
+}
+
+void process_A()
+{
+    while (1)
+    {
+
+        disp_str("A");
+        delay(10);
+    }
+}
+void process_B()
+{
+    while (1)
+    {
+
+        disp_str("B");
+        delay(10);
+    }
+}

@@ -16,6 +16,11 @@ DESCRIPTOR gdt[GDT_SIZE];
 u8 idt_ptr[6];
 GATE idt[IDT_SIZE];
 TSS tss;
+int int_reenter;
 PROCESS proc_table[NR_TASK];
+TASK task_table[NR_TASK] = {
+    {process_proto, STACK_SIZE_PROTO, "process_proto", 0},
+    {process_A, STACK_SIZE_A, "process_A", 1},
+    {process_B, STACK_SIZE_B, "process_B", 2}};
 PROCESS *p_proc_ready;
 char task_stack[STACK_SIZE_TOTAL];

@@ -1,5 +1,5 @@
 #include "interrupt.h"
-#include "const.h"
+
 // 初始化时钟中断
 void interruptInitialize()
 {
@@ -44,4 +44,12 @@ void init_8259A()
     // Slave  8259, OCW1
     //从芯片关闭所有中断
     out_byte(INT_S_CTLMASK, 0xFF);
+}
+
+//时钟中断处理函数
+void clock_handler()
+{
+
+    p_proc_ready = (p_proc_ready - proc_table + 1) % NR_TASK + proc_table;
+    disp_str("#");
 }

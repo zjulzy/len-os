@@ -8,6 +8,7 @@
     extern disp_pos
     extern p_proc_ready
     extern tss
+    extern int_reenter
     
 
 ; 导入kernel.cpp函数
@@ -20,6 +21,8 @@
     extern i8259_handler
     extern kernel_main
     extern disp_str
+    extern delay
+    extern clock_handler
 
     global restart
 ; 导出中断处理函数
@@ -89,7 +92,7 @@
     INT_SLAVE_CTL   equ  0xA0
     INT_SLAVE_CTLMASK   equ  0xA1
     EOI  equ  0x20
-    ClockMessage  db   "zawarudo"
+    ClockMessage  db   "z"
 
 ; 数据段结束----------------------------------------------------------------------------
 ; -------------------------------------------------------------------------------------
@@ -154,21 +157,29 @@ hwint00:
     mov dx,ss 
     mov ds,dx 
     mov es,dx 
-    ; 切换到内核栈
-    mov esp, StackTop
     
-
     mov  al ,  EOI
     out   INT_MASTER_CTL , al 
-    push ClockMessage
-    call disp_str
-    add esp,4
+    ; 如果当前由同一中断正在处理，就不进入内核栈
+    inc dword[int_reenter]
+    cmp  dword[int_reenter],0
+    jnz reenter
+    ; 切换到内核栈
+    mov esp, StackTop
+    sti
+    
 
+    call clock_handler
+    cli
     mov esp,[p_proc_ready]
-
-    ; 在tss中指定下一次由ring1切换到ring0的esp
+    lldt [esp+P_LDT_SEL]
+    ; 在tss中指定下一次由ring0切换到ring1的esp
     lea eax,[esp+P_STACKTOP]
     mov dword  [tss+TSS3_S_SP0],eax
+
+; 多次相同中断重入
+reenter:
+    dec dword[int_reenter]
     
     ;恢复寄存器的值
     pop gs 
@@ -308,6 +319,7 @@ stack_exception:
     push 12
     jmp exception
 general_protection:
+
     push 13
     jmp exception
 page_fault:

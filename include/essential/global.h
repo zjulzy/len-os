@@ -21,10 +21,11 @@ extern "C"
 
     //tss定义
     extern TSS tss;
-
+    extern int int_reenter;
     extern PROCESS proc_table[];
     extern char task_stack[];
     extern PROCESS *p_proc_ready;
+    extern TASK task_table[];
     // //使用多级循环队列来实现进程调度
     // extern PROCESS *process_queen1_head;
     // extern PROCESS process_queen1_tail;

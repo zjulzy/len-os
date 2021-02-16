@@ -53,11 +53,12 @@ extern "C"
 
     u32 seg2phys(u16 seg);
     void init_gdt();
+    void init_ldt();
     void init_idt();
     void init_tss();
     void exception_handler(int err_vec, int err_code, int eip, int cs, int eflags);
     void i8259_handler(int code);
-    void process_proto();
+
     void kernel_main();
 #ifdef __cplusplus
 }

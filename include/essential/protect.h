@@ -5,7 +5,7 @@
 //layer==-2
 #include "type.h"
 #include "const.h"
-
+typedef void (*task_f)();
 //存储段描述符/系统段描述符
 typedef struct s_descriptor
 {
@@ -109,10 +109,10 @@ typedef struct s_proc
 // 这个设计最早来自minix
 typedef struct s_task
 {
-    //task_f initial_eip;
+    task_f initial_eip;
     int stacksize;
     char name[16];
-    int priority;
+    //int priority;
     u32 pid;
 } TASK;
 
