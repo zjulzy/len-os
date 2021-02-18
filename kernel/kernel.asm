@@ -1,5 +1,5 @@
 %include "kernel.inc"
-
+%include "const.inc"
 
 
 ; 导入全局变量
@@ -23,6 +23,7 @@
     extern disp_str
     extern delay
     extern clock_handler
+    extern interrupt_request
 
     global restart
 ; 导出中断处理函数
@@ -59,42 +60,7 @@
     global page_fault;
     global copr_error;
 
-[SECTION .data]
-; pcb中寄存器存储位置定义
-    P_STACKBASE	equ	0
-    GSREG		equ	P_STACKBASE
-    FSREG		equ	GSREG		+ 4
-    ESREG		equ	FSREG		+ 4
-    DSREG		equ	ESREG		+ 4
-    EDIREG		equ	DSREG		+ 4
-    ESIREG		equ	EDIREG		+ 4
-    EBPREG		equ	ESIREG		+ 4
-    KERNELESPREG	equ	EBPREG		+ 4
-    EBXREG		equ	KERNELESPREG	+ 4
-    EDXREG		equ	EBXREG		+ 4
-    ECXREG		equ	EDXREG		+ 4
-    EAXREG		equ	ECXREG		+ 4
-    RETADR		equ	EAXREG		+ 4
-    EIPREG		equ	RETADR		+ 4
-    CSREG		equ	EIPREG		+ 4
-    EFLAGSREG	equ	CSREG		+ 4
-    ESPREG		equ	EFLAGSREG	+ 4
-    SSREG		equ	ESPREG		+ 4
-    P_STACKTOP	equ	SSREG		+ 4
-    P_LDT_SEL	equ	P_STACKTOP
-    P_LDT		equ	P_LDT_SEL	+ 4
 
-    TSS3_S_SP0	equ	4
-
-    ; 定义主从中断芯片的控制端口
-    INT_MASTER_CTL    equ 0x20
-    INT_MASTER_CTLMASK   equ  0x21
-    INT_SLAVE_CTL   equ  0xA0
-    INT_SLAVE_CTLMASK   equ  0xA1
-    EOI  equ  0x20
-    ClockMessage  db   "z"
-
-; 数据段结束----------------------------------------------------------------------------
 ; -------------------------------------------------------------------------------------
 ; 堆栈段
 [SECTION .bss]
@@ -128,69 +94,35 @@ kernel_start:
 	ltr	ax
 
     jmp kernel_main
-    ; 初始化tss
-;     call init_tss
-;     xor	eax, eax
-; 	mov	ax, SELECTOR_TSS
-; 	ltr	ax
-
-;     ; 调用process文件夹下函数初始化PCB队列
-;     call init_proc
-;     jmp$
-;     ; 系统内核初始化结束
+; 系统内核初始化结束
 ; -------------------------------------------------------------
 ; sys_call:
 
 ; 中断返回函数,完成特权级的切换
+
+%macro hwint_master 1
+    call save 
+    ; 屏蔽当前中断
+    ; in al,INT_MASTER_CTLMASK
+    ; or al,(%1<<1)
+    ; out INT_MASTER_CTLMASK,al 
+    ; 置EOI
+    mov al,EOI 
+    out INT_MASTER_CTL,al
+    sti 
+    push %1
+    call interrupt_request
+    pop ecx 
+    cli 
+    ; 重新开启当前中断
+    ; in al,INT_MASTER_CTLMASK
+    ; and al,~(%1<<1)
+    ; out INT_MASTER_CTLMASK,al 
+    ret
+%endmacro
 ALIGN 16
 hwint00:
-    ; 保存现场
-    sub esp,4
-    pushad
-    push ds
-    push es
-    push fs 
-    push gs
-
-    
-    ; 令es和ds指向ss同样的位置
-    mov dx,ss 
-    mov ds,dx 
-    mov es,dx 
-    
-    mov  al ,  EOI
-    out   INT_MASTER_CTL , al 
-    ; 如果当前由同一中断正在处理，就不进入内核栈
-    inc dword[int_reenter]
-    cmp  dword[int_reenter],0
-    jnz reenter
-    ; 切换到内核栈
-    mov esp, StackTop
-    sti
-    
-
-    call clock_handler
-    cli
-    mov esp,[p_proc_ready]
-    lldt [esp+P_LDT_SEL]
-    ; 在tss中指定下一次由ring0切换到ring1的esp
-    lea eax,[esp+P_STACKTOP]
-    mov dword  [tss+TSS3_S_SP0],eax
-
-; 多次相同中断重入
-reenter:
-    dec dword[int_reenter]
-    
-    ;恢复寄存器的值
-    pop gs 
-    pop fs 
-    pop es
-    pop ds 
-    popad
-    add esp,4
-
-    iretd
-
+    hwint_master 0
 
 hwint01:
     push 1
@@ -334,21 +266,51 @@ exception:
     add esp,  4*2
     hlt
 
+save:
+    ; 保存现场
+    pushad
+    push ds
+    push es
+    push fs 
+    push gs
+    ; 令es和ds指向ss同样的位置
+    mov dx,ss 
+    mov ds,dx 
+    mov es,dx 
+    mov eax,esp
+    ; 如果当前由同一中断正在处理，就执行中断重入
+    inc dword[int_reenter]
+    cmp  dword[int_reenter],0
+    jne .2
+.1:
+    mov esp,StackTop
+    push restart
+    jmp [eax+RETADR-P_STACKBASE]
+.2:
+    push reenter
+    jmp [eax+RETADR-P_STACKBASE]
+
+
+
+
+
 restart:
 	mov	esp, [p_proc_ready]
 	lldt	[esp + P_LDT_SEL] 
 	lea	eax, [esp + P_STACKTOP]
 	mov	dword [tss + TSS3_S_SP0], eax
+reenter:
+    dec dword[int_reenter]
+    
+    ;恢复寄存器的值
+    pop gs 
+    pop fs 
+    pop es
+    pop ds 
+    popad
+    add esp,4
 
-	pop	gs
-	pop	fs
-	pop	es
-	pop	ds
-	popad
-
-	add	esp, 4
-
-	iretd
+    iretd
 
 
 ; restart:

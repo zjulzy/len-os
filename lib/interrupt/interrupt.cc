@@ -38,8 +38,8 @@ void init_8259A()
     out_byte(INT_S_CTLMASK, 0x1);
 
     // Master 8259, OCW1
-    // 主芯片关闭所有中断,除了时钟中断
-    out_byte(INT_M_CTLMASK, 0xFE);
+    // 主芯片关闭所有中断
+    out_byte(INT_M_CTLMASK, 0xFF);
 
     // Slave  8259, OCW1
     //从芯片关闭所有中断
@@ -49,7 +49,13 @@ void init_8259A()
 //时钟中断处理函数
 void clock_handler()
 {
-
     p_proc_ready = (p_proc_ready - proc_table + 1) % NR_TASK + proc_table;
     disp_str("#");
+}
+void interrupt_request(int irq)
+{
+    if (irq == 0)
+    {
+        clock_handler();
+    }
 }

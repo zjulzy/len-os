@@ -22,7 +22,7 @@ INCLUDE_PATH = -I include/essential/ -I include/interrupt/  \
 # boot和kernel汇编flag
 BOOT_ASM_FLAG = -I boot/include
 KERNEL_ASM_FLAG = -I kernel/ -f elf
-OBJS_ASM_FLAG = -f elf
+OBJS_ASM_FLAG =-I kernel/ -f elf
 # -c指定只编译不链接
 # -fno-stack-protector指定不需要调用栈检查
 C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -fno-stack-protector -m32  -g
@@ -38,7 +38,7 @@ LENKERNEL = kernel/kernel.bin
 #中间文件定义
 OBJS = kernel/kernel.o kernel/kernel_cpp.o lib/essential/base.o lib/essential/display.o\
  			lib/essential/global.o lib/essential/memory.o \
-			lib/interrupt/interrupt.o lib/essential/proto.o \
+			lib/interrupt/interrupt.o lib/interrupt/interrupt_asm.o lib/essential/proto.o \
 			lib/process/process.o
 KERNEL = kernel/kernel.bin
 # 本makefile支持的所有操作
@@ -74,7 +74,7 @@ boot/loader.bin:boot/loader.asm boot/include/loader.inc boot/include/pm.inc boot
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<
 
 # 生成内核
-kernel/kernel.o : kernel/kernel.asm kernel/kernel.inc
+kernel/kernel.o : kernel/kernel.asm kernel/kernel.inc kernel/const.inc
 	$(ASM)  $(KERNEL_ASM_FLAG) -o $@ $< 
 
 kernel/kernel_cpp.o : kernel/kernel.cc
@@ -106,3 +106,5 @@ lib/essential/proto.o : lib/essential/proto.asm
 lib/process/process.o : lib/process/process.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
+lib/interrupt/interrupt_asm.o: lib/interrupt/interrupt.asm
+	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<

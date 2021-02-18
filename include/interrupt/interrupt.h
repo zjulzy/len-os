@@ -10,6 +10,9 @@ extern "C"
     void interruptInitialize();
     void init_8259A();
     void clock_handler();
+    void interrupt_request(int irq);
+    void disable_irq(int irq);
+    void enable_irq(int irq);
 #ifdef __cplusplus
 }
 #endif

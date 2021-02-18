@@ -13,7 +13,7 @@ extern "C"
     void process_proto();
     void process_A();
     void process_B();
-    void delay(int time);
+
     void init_proc();
     //void init_pcb(TASK *task, PROCESS *proc, u32 pid, char *stack, u16 selector_ldt);
 

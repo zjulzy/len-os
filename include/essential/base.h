@@ -58,7 +58,7 @@ extern "C"
     void init_tss();
     void exception_handler(int err_vec, int err_code, int eip, int cs, int eflags);
     void i8259_handler(int code);
-
+    void delay(int time);
     void kernel_main();
 #ifdef __cplusplus
 }

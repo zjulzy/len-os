@@ -5,7 +5,8 @@
 #include "base.h"
 void kernel_main()
 {
-    int_reenter = -1;
+    int_reenter = 0;
+    enable_irq(CLOCK_IRQ);
     delay(10);
     disp_clear();
     disp_str("-----\"kernel_main\" begins-----\n");
@@ -36,7 +37,7 @@ void init_gdt()
     disp_str("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
              "gdb change");
 }
-
+//初始化进程ldt，循环放入gdt
 void init_ldt()
 {
     u32 index_selector_ldt = INDEX_LDT_FIRST;
@@ -46,16 +47,13 @@ void init_ldt()
         index_selector_ldt += 1;
     }
 }
-
+//初始化idt
+//包含异常和硬件中断
 void init_idt()
 {
     //初始化中断开始---------------------------------------------------------------------
-
-    //初始化中断结束---------------------------------------------------------------------
-
     //类似gdt的初始化方法,初始化idt
     // idt_ptr[6] 共 6 个字节：0~15:Limit  16~47:Base
-
     u16 *p_idt_limit = (u16 *)(&idt_ptr[0]);
     u32 *p_idt_base = (u32 *)(&idt_ptr[2]);
     *p_idt_limit = IDT_SIZE * sizeof(GATE) - 1;
@@ -171,4 +169,17 @@ void init_tss()
                     DA_386TSS);
     tss.iobase = sizeof(tss); //没有io许可位图
     disp_str("tss initialized\n");
+}
+
+void delay(int time)
+{
+    for (int i = 0; i < time; i++)
+    {
+        for (int j = 0; j < 100; j++)
+        {
+            for (int k = 0; k < 1000; k++)
+            {
+            }
+        }
+    }
 }
