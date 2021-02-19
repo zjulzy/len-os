@@ -24,3 +24,4 @@ TASK task_table[NR_TASK] = {
     {process_B, STACK_SIZE_B, "process_B", 2}};
 PROCESS *p_proc_ready;
 char task_stack[STACK_SIZE_TOTAL];
+int ticks = 0;

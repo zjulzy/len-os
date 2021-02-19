@@ -24,8 +24,10 @@
     extern delay
     extern clock_handler
     extern interrupt_request
+    extern sys_call_handler
 
     global restart
+    global sys_call
 ; 导出中断处理函数
     global  hwint00
     global  hwint01
@@ -96,9 +98,15 @@ kernel_start:
     jmp kernel_main
 ; 系统内核初始化结束
 ; -------------------------------------------------------------
-; sys_call:
-
-; 中断返回函数,完成特权级的切换
+sys_call:
+    call save 
+    sti 
+    push eax 
+    call sys_call_handler
+    add esp,4
+    mov [esi+EAXREG-P_STACKBASE],eax 
+    cli 
+    ret
 
 %macro hwint_master 1
     call save 
@@ -277,7 +285,7 @@ save:
     mov dx,ss 
     mov ds,dx 
     mov es,dx 
-    mov eax,esp
+    mov esi,esp
     ; 如果当前由同一中断正在处理，就执行中断重入
     inc dword[int_reenter]
     cmp  dword[int_reenter],0
@@ -285,10 +293,10 @@ save:
 .1:
     mov esp,StackTop
     push restart
-    jmp [eax+RETADR-P_STACKBASE]
+    jmp [esi+RETADR-P_STACKBASE]
 .2:
     push reenter
-    jmp [eax+RETADR-P_STACKBASE]
+    jmp [esi+RETADR-P_STACKBASE]
 
 
 
@@ -312,18 +320,3 @@ reenter:
 
     iretd
 
-
-; restart:
-;     mov  esp , [proc_queen1_head]
-;     lldt	[esp + P_LDT_SEL]
-; 	lea	eax, [esp + P_STACKTOP]
-; 	mov	dword [tss + TSS3_S_SP0], eax
-;     dec	dword [k_reenter].
-    
-; 	pop	gs
-; 	pop	fs
-; 	pop	es
-; 	pop	ds
-; 	popad
-; 	add	esp, 4
-; 	iretd

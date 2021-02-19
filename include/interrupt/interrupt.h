@@ -1,3 +1,5 @@
+#ifndef LENOS_INTERRUPT_H
+#define LENOS_INTERRUPT_H
 #include "interrupt_option.h"
 #include "proto.h"
 #include "const.h"
@@ -15,4 +17,5 @@ extern "C"
     void enable_irq(int irq);
 #ifdef __cplusplus
 }
+#endif
 #endif

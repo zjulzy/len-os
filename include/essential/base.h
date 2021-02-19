@@ -8,6 +8,7 @@ extern "C"
 #endif
 #include "protect.h"
 #include "global.h"
+#include "syscall.h"
 #include "display.h"
 #include "memory.h"
 #include "interrupt.h"

@@ -140,7 +140,7 @@ void process_proto()
     while (1)
     {
 
-        disp_str("2333");
+        disp_int(get_ticks());
         delay(10);
     }
 }

@@ -155,6 +155,8 @@ void init_idt()
 
     init_idt_description(INT_VECTOR_IRQ8 + 7, DA_386IGate,
                          hwint15, PRIVILEGE_KRNL);
+    init_idt_description(INT_VECTOR_SYS_CALL, DA_386IGate,
+                         sys_call, PRIVILEGE_USER);
     disp_str("\n idt change\n");
 }
 

@@ -3,6 +3,8 @@
 #define LENOS_CONST_H
 
 //idt相关宏定义=========================================
+//系统调用中断向量
+#define INT_VECTOR_SYS_CALL 0X90
 //异常中断向量
 #define INT_VECTOR_DIVIDE 0x0
 #define INT_VECTOR_DEBUG 0x1
@@ -113,4 +115,5 @@
 #define FLOPPY_IRQ 6    /* floppy disk */
 #define PRINTER_IRQ 7
 #define AT_WINI_IRQ 14 /* at winchester */
+
 #endif

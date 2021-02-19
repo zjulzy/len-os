@@ -51,6 +51,7 @@ void clock_handler()
 {
     p_proc_ready = (p_proc_ready - proc_table + 1) % NR_TASK + proc_table;
     disp_str("#");
+    ticks++;
 }
 void interrupt_request(int irq)
 {

@@ -26,6 +26,9 @@ extern "C"
     extern char task_stack[];
     extern PROCESS *p_proc_ready;
     extern TASK task_table[];
+
+    //系统调用相关变量
+    extern int ticks;
     // //使用多级循环队列来实现进程调度
     // extern PROCESS *process_queen1_head;
     // extern PROCESS process_queen1_tail;
