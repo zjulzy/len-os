@@ -44,13 +44,81 @@ void init_8259A()
     // Slave  8259, OCW1
     //从芯片关闭所有中断
     out_byte(INT_S_CTLMASK, 0xFF);
+    //初始化8253PIT
+    out_byte(TIMER_MODE, RATE_GENERATOR);
+    out_byte(TIMER0, (u8)(TIMER_FREQ / HZ));
+    out_byte(TIMER0, (u8)(TIMER_FREQ / HZ));
+}
+
+void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head, PROCESS *&next_tail, PROCESS *&curr, PROCESS *&tail, int next_ticks)
+{
+    curr->ticks--;
+    if (curr->ticks == 0)
+    {
+
+        curr->ticks = next_ticks;
+        curr_head = curr->next_pcb;
+        if (next_tail != tail)
+        {
+            next_tail->next_pcb = curr;
+            next_tail = curr;
+            next_tail->next_pcb = tail;
+        }
+        else
+        {
+            next_head = curr;
+            next_tail = curr;
+            next_tail->next_pcb = tail;
+        }
+        if (curr_tail == curr)
+        {
+            curr = next_head;
+            curr_tail = tail;
+        }
+        else
+        {
+            curr = curr_head;
+        }
+    }
 }
 
 //时钟中断处理函数
 void clock_handler()
 {
-    p_proc_ready = (p_proc_ready - proc_table + 1) % NR_TASK + proc_table;
     disp_str("#");
+    if (process_queen1_tail == process_tail)
+    {
+        if (process_queen2_tail == process_tail)
+        {
+
+            if (p_proc_ready == process_tail)
+            {
+            }
+            else
+            {
+                //disp_int(p_proc_ready->pid);
+                p_proc_ready->ticks--;
+                if (p_proc_ready->ticks == 0)
+                {
+                    p_proc_ready->ticks = LAST_QUENE_SLICE;
+                    p_proc_ready = p_proc_ready->next_pcb;
+                    if (p_proc_ready == process_tail)
+                    {
+                        p_proc_ready = process_queen3_head;
+                    }
+                }
+            }
+        }
+        else
+        {
+            next_quene(process_queen2_head, process_queen2_tail, process_queen3_head, process_queen3_tail, p_proc_ready, process_tail, LAST_QUENE_SLICE);
+        }
+    }
+    else
+    {
+        next_quene(process_queen1_head, process_queen1_tail, process_queen2_head, process_queen2_tail, p_proc_ready, process_tail, SECOND_QUENE_SLICE);
+    }
+
     ticks++;
 }
 void interrupt_request(int irq)

@@ -17,11 +17,20 @@ u8 idt_ptr[6];
 GATE idt[IDT_SIZE];
 TSS tss;
 int int_reenter;
-PROCESS proc_table[NR_TASK];
-TASK task_table[NR_TASK] = {
+PROCESS proc_table[NR_TASK + 1];
+TASK task_table[NR_TASK + 1] = {
     {process_proto, STACK_SIZE_PROTO, "process_proto", 0},
     {process_A, STACK_SIZE_A, "process_A", 1},
-    {process_B, STACK_SIZE_B, "process_B", 2}};
-PROCESS *p_proc_ready;
+    {process_B, STACK_SIZE_B, "process_B", 2},
+    {process_C, STACK_SIZE_C, "process_C", 3}};
+
 char task_stack[STACK_SIZE_TOTAL];
 int ticks = 0;
+PROCESS *p_proc_ready;
+PROCESS *process_queen1_head = proc_table;
+PROCESS *process_queen1_tail = proc_table;
+PROCESS *process_queen2_head = proc_table;
+PROCESS *process_queen2_tail = proc_table;
+PROCESS *process_queen3_head = proc_table;
+PROCESS *process_queen3_tail = proc_table;
+PROCESS *process_tail = proc_table;

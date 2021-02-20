@@ -30,6 +30,12 @@
 //8259A中断入口
 #define INT_VECTOR_IRQ0 0x20
 #define INT_VECTOR_IRQ8 0x28
+//8253相关定义
+#define TIMER0 0x40
+#define TIMER_MODE 0x43
+#define RATE_GENERATOR 0x34
+#define TIMER_FREQ 1193182L
+#define HZ 100
 //权限
 #define PRIVILEGE_KRNL 0
 #define PRIVILEGE_TASK 1
@@ -116,4 +122,8 @@
 #define PRINTER_IRQ 7
 #define AT_WINI_IRQ 14 /* at winchester */
 
+//多级反馈队列进程调度时间片限制
+#define FIRST_QUENE_SLICE 2
+#define SECOND_QUENE_SLICE 4
+#define LAST_QUENE_SLICE 8
 #endif

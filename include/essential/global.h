@@ -29,13 +29,14 @@ extern "C"
 
     //系统调用相关变量
     extern int ticks;
-    // //使用多级循环队列来实现进程调度
-    // extern PROCESS *process_queen1_head;
-    // extern PROCESS process_queen1_tail;
-    // extern PROCESS *process_queen2_head;
-    // extern PROCESS process_queen2_tail;
-    // extern PROCESS *process_queen3_head;
-    // extern PROCESS process_queen3_tail;
+    //使用多级循环队列来实现进程调度
+    extern PROCESS *process_queen1_head;
+    extern PROCESS *process_queen1_tail;
+    extern PROCESS *process_queen2_head;
+    extern PROCESS *process_queen2_tail;
+    extern PROCESS *process_queen3_head;
+    extern PROCESS *process_queen3_tail;
+    extern PROCESS *process_tail;
     // //阻塞状态队列
     // extern PROCESS *process_blocked_head;
     // extern PROCESS process_blocked_tail;

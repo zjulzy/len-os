@@ -64,9 +64,8 @@ void init_proc()
     TASK *p_task = task_table;
     u16 selector_ldt = SELECTOR_LDT_FIRST;
     u32 remain_stack_size = STACK_SIZE_TOTAL;
-    for (int i = 0; i < NR_TASK; i++)
+    for (int i = 0; i <= NR_TASK; i++)
     {
-
         p_process->pid = p_task->pid;
         p_process->ldt_sel = selector_ldt;
 
@@ -90,7 +89,19 @@ void init_proc()
         selector_ldt += 1 << 3;
         remain_stack_size -= p_task->stacksize;
     }
-    p_proc_ready = proc_table;
+
+    p_process = proc_table;
+    p_process->next_pcb = p_process;
+    p_process->ticks = 0;
+    process_queen1_head = p_process + 1;
+    for (int i = 1; i <= NR_TASK; i++)
+    {
+        p_process++;
+        p_process->ticks = FIRST_QUENE_SLICE;
+        p_process->next_pcb = i == NR_TASK ? process_tail : p_process + 1;
+    }
+    process_queen1_tail = p_process;
+    p_proc_ready = process_queen1_head;
 }
 //通过task初始化一个pcb,传入pcb地址,初始化pcb结构数据
 //task确定pcb将要插入的优先级队列
@@ -140,7 +151,7 @@ void process_proto()
     while (1)
     {
 
-        disp_int(get_ticks());
+        disp_str("p");
         delay(10);
     }
 }
@@ -160,6 +171,15 @@ void process_B()
     {
 
         disp_str("B");
+        delay(10);
+    }
+}
+void process_C()
+{
+    while (1)
+    {
+
+        disp_str("C");
         delay(10);
     }
 }
