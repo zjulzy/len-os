@@ -40,7 +40,7 @@ extern "C"
     // //阻塞状态队列
     // extern PROCESS *process_blocked_head;
     // extern PROCESS process_blocked_tail;
-
+    extern KB_INPUT kb_buffer;
 #ifdef __cplusplus
 }
 #endif

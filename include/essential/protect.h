@@ -148,4 +148,12 @@ typedef struct s_tss
     u16 iobase; // I/O位图基址大于或等于TSS段界限，就表示没有I/O许可位图
 } TSS;
 
+//定义键盘输入缓存区，具体实现类似于循环队列
+typedef struct s_keyboard
+{
+    char *p_head;
+    char *p_tail;
+    int count;
+    char buffer[KB_IN_BYTES];
+} KB_INPUT;
 #endif

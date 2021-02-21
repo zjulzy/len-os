@@ -12,6 +12,7 @@ extern "C"
 #include "display.h"
 #include "memory.h"
 #include "interrupt.h"
+#include "process.h"
 
     //初始化描述符
     void init_descriptor(DESCRIPTOR *p_desc, u32 base, u32 limit, u16 attribute);
@@ -59,7 +60,7 @@ extern "C"
     void init_tss();
     void exception_handler(int err_vec, int err_code, int eip, int cs, int eflags);
     void i8259_handler(int code);
-    void delay(int time);
+
     void kernel_main();
 #ifdef __cplusplus
 }

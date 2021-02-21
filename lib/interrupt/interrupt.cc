@@ -1,10 +1,6 @@
 #include "interrupt.h"
 
-// 初始化时钟中断
-void interruptInitialize()
-{
-}
-
+//初始化中断相关==============================================================================
 //初始化8259A,操作顺序不可逆转
 //依次向主片和从片中写入ICW1,ICW2,ICW3,ICW4
 void init_8259A()
@@ -44,12 +40,24 @@ void init_8259A()
     // Slave  8259, OCW1
     //从芯片关闭所有中断
     out_byte(INT_S_CTLMASK, 0xFF);
+}
+void init_keyboard()
+{
+    kb_buffer.count = 0;
+    kb_buffer.p_head = kb_buffer.p_tail = kb_buffer.buffer;
+    enable_irq(KEYBOARD_IRQ);
+}
+void init_clock()
+{
     //初始化8253PIT
     out_byte(TIMER_MODE, RATE_GENERATOR);
     out_byte(TIMER0, (u8)(TIMER_FREQ / HZ));
     out_byte(TIMER0, (u8)(TIMER_FREQ / HZ));
+    enable_irq(CLOCK_IRQ);
 }
+//====================================================================================================
 
+//中断处理==============================================================================================
 void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head, PROCESS *&next_tail, PROCESS *&curr, PROCESS *&tail, int next_ticks)
 {
     curr->ticks--;
@@ -126,5 +134,23 @@ void interrupt_request(int irq)
     if (irq == 0)
     {
         clock_handler();
+    }
+    if (irq == 1)
+    {
+        keyboard_handler();
+    }
+}
+void keyboard_handler()
+{
+    u8 scan_code = in_byte(KB_DATA);
+    if (kb_buffer.count < KB_IN_BYTES)
+    {
+        *(kb_buffer.p_head) = scan_code;
+        kb_buffer.p_head++;
+        if (kb_buffer.p_head == kb_buffer.buffer + KB_IN_BYTES)
+        {
+            kb_buffer.p_head = kb_buffer.buffer;
+        }
+        kb_buffer.count++;
     }
 }

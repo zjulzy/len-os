@@ -6,7 +6,7 @@
 void kernel_main()
 {
     int_reenter = 0;
-    enable_irq(CLOCK_IRQ);
+
     delay(10);
     disp_clear();
     disp_str("-----\"kernel_main\" begins-----\n");
@@ -171,17 +171,4 @@ void init_tss()
                     DA_386TSS);
     tss.iobase = sizeof(tss); //没有io许可位图
     disp_str("tss initialized\n");
-}
-
-void delay(int time)
-{
-    for (int i = 0; i < time; i++)
-    {
-        for (int j = 0; j < 100; j++)
-        {
-            for (int k = 0; k < 1000; k++)
-            {
-            }
-        }
-    }
 }
