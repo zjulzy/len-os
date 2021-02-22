@@ -40,6 +40,8 @@ void init_8259A()
     // Slave  8259, OCW1
     //从芯片关闭所有中断
     out_byte(INT_S_CTLMASK, 0xFF);
+    init_keyboard();
+    init_clock();
 }
 void init_keyboard()
 {
@@ -93,7 +95,7 @@ void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head, P
 //时钟中断处理函数
 void clock_handler()
 {
-    disp_str("#");
+    //disp_str("#");
     if (process_queen1_tail == process_tail)
     {
         if (process_queen2_tail == process_tail)

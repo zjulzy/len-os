@@ -60,6 +60,12 @@
 
 void init_proc()
 {
+    TASK task_table[NR_TASK + 1] = {
+        {process_proto, STACK_SIZE_PROTO, "process_proto", 0},
+        {process_A, STACK_SIZE_A, "process_A", 1},
+        {process_B, STACK_SIZE_B, "process_B", 2},
+        {process_C, STACK_SIZE_C, "process_C", 3},
+        {task_tty, STACK_SIZE_TTY, "process_tty", 4}};
     PROCESS *p_process = proc_table;
     TASK *p_task = task_table;
     u16 selector_ldt = SELECTOR_LDT_FIRST;
@@ -161,7 +167,7 @@ void process_A()
     while (1)
     {
 
-        disp_str("A");
+        //disp_str("A");
         delay(10);
     }
 }
@@ -170,7 +176,7 @@ void process_B()
     while (1)
     {
 
-        disp_str("B");
+        //disp_str("B");
         delay(10);
     }
 }
@@ -179,7 +185,7 @@ void process_C()
     while (1)
     {
 
-        disp_str("C");
+        //disp_str("C");
         delay(10);
     }
 }

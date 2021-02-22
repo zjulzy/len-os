@@ -18,11 +18,6 @@ GATE idt[IDT_SIZE];
 TSS tss;
 int int_reenter;
 PROCESS proc_table[NR_TASK + 1];
-TASK task_table[NR_TASK + 1] = {
-    {process_proto, STACK_SIZE_PROTO, "process_proto", 0},
-    {process_A, STACK_SIZE_A, "process_A", 1},
-    {process_B, STACK_SIZE_B, "process_B", 2},
-    {process_C, STACK_SIZE_C, "process_C", 3}};
 
 char task_stack[STACK_SIZE_TOTAL];
 int ticks = 0;

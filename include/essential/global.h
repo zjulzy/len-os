@@ -1,13 +1,17 @@
 #ifndef LENOS_GLOBAL_H
 #define LENOS_GLOBAL_H
+#define STACK_SIZE_PROTO 0x8000
+#define STACK_SIZE_A 0x8000
+#define STACK_SIZE_B 0x8000
+#define STACK_SIZE_C 0x8000
+#define STACK_SIZE_TTY 0x8000
+#define STACK_SIZE_TOTAL STACK_SIZE_PROTO + STACK_SIZE_A + STACK_SIZE_B + STACK_SIZE_C + STACK_SIZE_TTY
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 //定义全局变量
-#include "process.h"
 #include "protect.h"
-
     extern int disp_pos;
     //kernel中使用的gdt指针
     //描述符

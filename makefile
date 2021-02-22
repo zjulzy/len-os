@@ -39,7 +39,8 @@ LENKERNEL = kernel/kernel.bin
 OBJS = kernel/kernel.o kernel/kernel_cpp.o lib/essential/base.o lib/essential/display.o\
  			lib/essential/global.o lib/essential/memory.o \
 			lib/interrupt/interrupt.o lib/interrupt/interrupt_asm.o lib/essential/proto.o \
-			lib/process/process.o lib/interrupt/syscall.o lib/interrupt/syscall_asm.o
+			lib/process/process.o lib/interrupt/syscall.o lib/interrupt/syscall_asm.o\
+			lib/iosystem/keyboard.o lib/process/tty.o
 KERNEL = kernel/kernel.bin
 # 本makefile支持的所有操作
 .PHONY : initialize everything clean buildimg realclean image disasm
@@ -112,3 +113,7 @@ lib/interrupt/syscall.o : lib/interrupt/syscall.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 lib/interrupt/syscall_asm.o : lib/interrupt/syscall.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
+lib/iosystem/keyboard.o : lib/iosystem/keyboard.cc
+	$(GCC) $(C_FLAGS) -o $@ $<
+lib/process/tty.o:lib/process/tty.cc
+	$(GCC) $(C_FLAGS) -o $@ $<

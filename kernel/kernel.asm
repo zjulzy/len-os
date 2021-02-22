@@ -133,10 +133,7 @@ hwint00:
     hwint_master 0
 
 hwint01:
-    push 1
-    call i8259_handler
-    add esp, 2
-    hlt
+    hwint_master 1
 hwint02:
     push 2
     call i8259_handler
