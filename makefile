@@ -33,15 +33,15 @@ LD_FLAGS  = -s -Ttext $(ENTRYPOINT) -m elf_i386
 LD_GDB_FLAGS = -Ttext $(ENTRYPOINT) -m elf_i386 
 
 # 目标文件定义
-LENBOOT= boot/boot.bin boot/loader.bin
-LENKERNEL = kernel/kernel.bin
+LENBOOT= build/boot/boot.bin build/boot/loader.bin
+LENKERNEL = build/kernel/kernel.bin
 #中间文件定义
-OBJS = kernel/kernel.o kernel/kernel_cpp.o lib/essential/base.o lib/essential/display.o\
- 			lib/essential/global.o lib/essential/memory.o \
-			lib/interrupt/interrupt.o lib/interrupt/interrupt_asm.o lib/essential/proto.o \
-			lib/process/process.o lib/interrupt/syscall.o lib/interrupt/syscall_asm.o\
-			lib/iosystem/keyboard.o lib/process/tty.o
-KERNEL = kernel/kernel.bin
+OBJS = build/kernel/kernel.o build/kernel/kernel_cpp.o build/essential/base.o build/essential/display.o\
+ 			build/essential/global.o build/essential/memory.o \
+			build/interrupt/interrupt.o build/interrupt/interrupt_asm.o build/essential/proto.o \
+			build/process/process.o build/interrupt/syscall.o build/interrupt/syscall_asm.o\
+			build/iosystem/keyboard.o build/process/tty.o
+KERNEL = build/kernel/kernel.bin
 # 本makefile支持的所有操作
 .PHONY : initialize everything clean buildimg realclean image disasm
 
@@ -61,24 +61,24 @@ everything : $(LENBOOT) $(LENKERNEL)
 # 生成镜像文件
 image : everything clean buildimg
 
-buildimg : boot/boot.bin  boot/loader.bin kernel/kernel.bin
+buildimg : $(LENKERNEL) $(LENBOOT)
 	dd if=boot/boot.bin of=c.img bs=512 count=1 conv=notrunc 
 	sudo mount ./c.img /mnt/floppy
-	sudo cp boot/loader.bin /mnt/floppy
-	sudo cp kernel/kernel.bin /mnt/floppy
+	sudo cp build/boot/loader.bin /mnt/floppy
+	sudo cp build/kernel/kernel.bin /mnt/floppy
 	sudo umount /mnt/floppy
 
 # 生成boot和loader
-boot/boot.bin: boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc boot/include/boot_include.asm
+build/boot/boot.bin: boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc boot/include/boot_include.asm
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<
-boot/loader.bin:boot/loader.asm boot/include/loader.inc boot/include/pm.inc boot/include/loader_include.asm
+build/boot/loader.bin:boot/loader.asm boot/include/loader.inc boot/include/pm.inc boot/include/loader_include.asm
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<
 
 # 生成内核
-kernel/kernel.o : kernel/kernel.asm kernel/kernel.inc kernel/const.inc
+build/kernel/kernel.o : kernel/kernel.asm kernel/kernel.inc kernel/const.inc
 	$(ASM)  $(KERNEL_ASM_FLAG) -o $@ $< 
 
-kernel/kernel_cpp.o : kernel/kernel.cc
+build/kernel/kernel_cpp.o : kernel/kernel.cc
 	$(GCC)  $(C_FLAGS) -o $@ $<
 
 $(KERNEL):$(OBJS)
@@ -86,34 +86,34 @@ $(KERNEL):$(OBJS)
 
 # 生成中间文件
 
-lib/essential/global.o :lib/essential/global.cc
+build/essential/global.o :lib/essential/global.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
 
-lib/essential/memory.o: lib/essential/memory.asm
+build/essential/memory.o: lib/essential/memory.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
 
-lib/essential/display.o :lib/essential/display.asm
+build/essential/display.o :lib/essential/display.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
 
-lib/essential/base.o : lib/essential/base.cc
+build/essential/base.o : lib/essential/base.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
-lib/interrupt/interrupt.o:lib/interrupt/interrupt.cc
+build/interrupt/interrupt.o:lib/interrupt/interrupt.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
-lib/essential/proto.o : lib/essential/proto.asm
+build/essential/proto.o : lib/essential/proto.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
-lib/process/process.o : lib/process/process.cc
+build/process/process.o : lib/process/process.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
-lib/interrupt/interrupt_asm.o: lib/interrupt/interrupt.asm
+build/interrupt/interrupt_asm.o: lib/interrupt/interrupt.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
-lib/interrupt/syscall.o : lib/interrupt/syscall.cc
+build/interrupt/syscall.o : lib/interrupt/syscall.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
-lib/interrupt/syscall_asm.o : lib/interrupt/syscall.asm
+build/interrupt/syscall_asm.o : lib/interrupt/syscall.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
-lib/iosystem/keyboard.o : lib/iosystem/keyboard.cc
+build/iosystem/keyboard.o : lib/iosystem/keyboard.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
-lib/process/tty.o:lib/process/tty.cc
+build/process/tty.o:lib/process/tty.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
