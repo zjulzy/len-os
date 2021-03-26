@@ -7,6 +7,7 @@ extern "C"
 #include "const.h"
 #include "type.h"
 #include "protect.h"
+#include "proto.h"
 #include "global.h"
 #include "display.h"
 

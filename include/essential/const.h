@@ -238,5 +238,15 @@
 #define PAD_INS PAD_0               /* Ins		*/
 #define PAD_MID PAD_5               /* Middle key	*/
 #define PAD_DEL PAD_DOT             /* Del		*/
+
+/*CRT Controller 相关定义*/
+#define CRTC_ADDR_REG 0x3D4
+#define CRTC_DATA_REG 0x3D5
+#define START_ADDR_H 0xC
+#define START_ADDR_L 0xD
+#define CURSOR_H 0xE
+#define CURSOR_L 0xF
+#define V_MEM_BASE 0xB8000
+#define V_MEM_SIZE 0x8000
 //=====================================================================================
 #endif

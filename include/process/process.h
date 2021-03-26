@@ -8,6 +8,7 @@ extern "C"
 #include "global.h"
 #include "display.h"
 #include "keyboard.h"
+#include "interrupt.h"
 #include "memory.h"
     void process_proto();
     void process_A();

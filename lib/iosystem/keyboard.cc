@@ -310,5 +310,11 @@ void in_process(u32 key)
     {
         output[0] = key & 0xFF;
         disp_str(output);
+        __asm__ __volatile__("cli");
+        out_byte(CRTC_ADDR_REG, CURSOR_H);
+        out_byte(CRTC_DATA_REG, ((disp_pos / 2) >> 8) & 0xFF);
+        out_byte(CRTC_ADDR_REG, CURSOR_L);
+        out_byte(CRTC_DATA_REG, (disp_pos / 2) & 0xFF);
+        __asm__ __volatile__("sti");
     }
 }

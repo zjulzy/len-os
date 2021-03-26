@@ -62,7 +62,7 @@ everything : $(LENBOOT) $(LENKERNEL)
 image : everything clean buildimg
 
 buildimg : $(LENKERNEL) $(LENBOOT)
-	dd if=boot/boot.bin of=c.img bs=512 count=1 conv=notrunc 
+	dd if=build/boot/boot.bin of=c.img bs=512 count=1 conv=notrunc 
 	sudo mount ./c.img /mnt/floppy
 	sudo cp build/boot/loader.bin /mnt/floppy
 	sudo cp build/kernel/kernel.bin /mnt/floppy
