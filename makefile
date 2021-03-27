@@ -59,7 +59,7 @@ clean:
 # 生成引导文件和内核文件
 everything : $(LENBOOT) $(LENKERNEL)
 # 生成镜像文件
-image : everything clean buildimg
+image : everything realclean buildimg
 
 buildimg : $(LENKERNEL) $(LENBOOT)
 	dd if=build/boot/boot.bin of=c.img bs=512 count=1 conv=notrunc 
