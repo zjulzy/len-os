@@ -126,6 +126,10 @@
 #define FIRST_QUENE_SLICE 2
 #define SECOND_QUENE_SLICE 4
 #define LAST_QUENE_SLICE 8
+// tty最大数量.
+#define NR_CONSOLE 3
+// tty最大输入长度
+#define TTY_IN_BYTES 256
 //键盘相关io宏定义=============================================================================
 /* AT keyboard */
 /* 8042 ports */

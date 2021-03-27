@@ -10,10 +10,11 @@ extern "C"
 #include "proto.h"
 #include "global.h"
 #include "display.h"
+#include "console.h"
 
-    void keyboard_read();
+    void keyboard_read(S_TTY *p_tty);
     u8 get_byte_from_kbuf();
-    void in_process(u32 key);
+    void in_process(S_TTY *p_tty, u32 key);
 #ifdef __cplusplus
 }
 #endif

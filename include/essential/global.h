@@ -10,7 +10,8 @@
 extern "C"
 {
 #endif
-//定义全局变量
+    // global.h 声明全局变量
+
 #include "protect.h"
     extern int disp_pos;
     //kernel中使用的gdt指针
@@ -45,6 +46,7 @@ extern "C"
     // extern PROCESS *process_blocked_head;
     // extern PROCESS process_blocked_tail;
     extern KB_INPUT kb_buffer;
+    extern int current_console;
 #ifdef __cplusplus
 }
 #endif

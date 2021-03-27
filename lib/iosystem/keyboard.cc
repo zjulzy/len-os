@@ -146,7 +146,7 @@ u32 keymap[NR_SCAN_CODES * MAP_COLS] = {
 /*======================================================================*
                            keyboard_read
 *======================================================================*/
-void keyboard_read()
+void keyboard_read(S_TTY *p_tty)
 {
     u8 scan_code;
     char output[2];
@@ -271,7 +271,7 @@ void keyboard_read()
                 key |= alt_l ? FLAG_ALT_L : 0;
                 key |= alt_r ? FLAG_ALT_R : 0;
 
-                in_process(key);
+                in_process(p_tty, key);
             }
         }
     }
@@ -301,20 +301,43 @@ u8 get_byte_from_kbuf() /* 从键盘缓冲区中读取下一个字节 */
     return scan_code;
 }
 
-void in_process(u32 key)
+void in_process(S_TTY *p_tty, u32 key)
 {
 
     char output[2] = {'\0', '\0'};
 
     if (!(key & FLAG_EXT))
     {
-        output[0] = key & 0xFF;
-        disp_str(output);
-        __asm__ __volatile__("cli");
-        out_byte(CRTC_ADDR_REG, CURSOR_H);
-        out_byte(CRTC_DATA_REG, ((disp_pos / 2) >> 8) & 0xFF);
-        out_byte(CRTC_ADDR_REG, CURSOR_L);
-        out_byte(CRTC_DATA_REG, (disp_pos / 2) & 0xFF);
-        __asm__ __volatile__("sti");
+        if (p_tty->in_buffer_count < TTY_IN_BYTES)
+        {
+            *(p_tty->in_buffer_head) = key;
+            p_tty->in_buffer_head++;
+            if (p_tty->in_buffer_head == p_tty->in_buffer + TTY_IN_BYTES)
+            {
+                p_tty->in_buffer_head = p_tty->in_buffer;
+            }
+            p_tty->in_buffer_count++;
+        }
+    }
+    else
+    {
+        int raw_code = key & MASK_RAW;
+        switch (raw_code)
+        {
+        case UP:
+            if ((key & FLAG_SHIFT_L) || (key & FLAG_SHIFT_R))
+            {
+                set_cursor(80 * 15);
+            }
+            break;
+        case DOWN:
+            if ((key & FLAG_SHIFT_L) || (key & FLAG_SHIFT_R))
+            {
+                /* Shift+Down, do nothing */
+            }
+            break;
+        default:
+            break;
+        }
     }
 }

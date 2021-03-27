@@ -30,3 +30,5 @@ PROCESS *process_queen3_head = proc_table;
 PROCESS *process_queen3_tail = proc_table;
 PROCESS *process_tail = proc_table;
 KB_INPUT kb_buffer;
+// 当前显示终端
+int current_console;

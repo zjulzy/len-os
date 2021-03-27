@@ -14,7 +14,7 @@ ENTRYOFFSET	=   0x400
 ASM = nasm
 DASM = ndisasm
 
-GCC = gcc
+GCC = g++
 LD = ld
 INCLUDE_PATH = -I include/essential/ -I include/interrupt/  \
  -I include/iosystem/   -I include/process/
@@ -37,7 +37,7 @@ LENBOOT= build/boot/boot.bin build/boot/loader.bin
 LENKERNEL = build/kernel/kernel.bin
 #中间文件定义
 OBJS = build/kernel/kernel.o build/kernel/kernel_cpp.o build/essential/base.o build/essential/display.o\
- 			build/essential/global.o build/essential/memory.o \
+ 			build/essential/global.o build/essential/memory.o build/iosystem/console.o\
 			build/interrupt/interrupt.o build/interrupt/interrupt_asm.o build/essential/proto.o \
 			build/process/process.o build/interrupt/syscall.o build/interrupt/syscall_asm.o\
 			build/iosystem/keyboard.o build/process/tty.o
@@ -46,7 +46,7 @@ KERNEL = build/kernel/kernel.bin
 .PHONY : initialize everything clean buildimg realclean image disasm
 
 # make默认从此开始执行,使用bochs开始加载系统
-initialize : image
+initialize : buildimg gdb
 	bochs -f bochsrc
 
 # 删除所有文件
@@ -84,6 +84,9 @@ build/kernel/kernel_cpp.o : kernel/kernel.cc
 $(KERNEL):$(OBJS)
 	$(LD)  $(LD_FLAGS) -o $@ $^
 
+gdb : $(OBJS)
+	$(LD)  $(LD_GDB_FLAGS) -o build/kernel/kernel_gdb.bin $^
+
 # 生成中间文件
 
 build/essential/global.o :lib/essential/global.cc
@@ -116,4 +119,7 @@ build/interrupt/syscall_asm.o : lib/interrupt/syscall.asm
 build/iosystem/keyboard.o : lib/iosystem/keyboard.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 build/process/tty.o:lib/process/tty.cc
+	$(GCC) $(C_FLAGS) -o $@ $<
+
+build/iosystem/console.o : lib/iosystem/console.cc
 	$(GCC) $(C_FLAGS) -o $@ $<

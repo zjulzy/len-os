@@ -156,4 +156,19 @@ typedef struct s_keyboard
     int count;
     char buffer[KB_IN_BYTES];
 } KB_INPUT;
+typedef struct s_tty
+{
+    u32 in_buffer[TTY_IN_BYTES];
+    u32 *in_buffer_head; /*指向缓存区的下一个空闲位置*/
+    u32 *in_buffer_tail; /*指向键盘任务应该处理的键值*/
+    int in_buffer_count;
+} S_TTY;
+typedef struct s_console
+{
+    u32 current_addr;
+    u32 v_mem_addr; /*当前控制台在显存中的位置以及所占大小*/
+    u32 v_mem_limit;
+    u32 cursor; /*当前光标位置*/
+} S_CONSOLE;
+
 #endif
