@@ -130,6 +130,9 @@
 #define NR_CONSOLE 3
 // tty最大输入长度
 #define TTY_IN_BYTES 256
+
+#define SCREEN_SIZE (80 * 25)
+#define SCREEN_WIDTH 80
 //键盘相关io宏定义=============================================================================
 /* AT keyboard */
 /* 8042 ports */

@@ -25,7 +25,7 @@ KERNEL_ASM_FLAG = -I kernel/ -f elf
 OBJS_ASM_FLAG =-I kernel/ -f elf
 # -c指定只编译不链接
 # -fno-stack-protector指定不需要调用栈检查
-C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -fno-stack-protector -m32  -g
+C_FLAGS		= $(INCLUDE_PATH) -c -fno-builtin -fno-stack-protector -m32  -g -O0
 LD_FLAGS  = -s -Ttext $(ENTRYPOINT) -m elf_i386 
 
 # 使用gdb进行调试时，需要打开gcc -g并关闭ld -s选项，同时使用gdb在编译好的kernel.bin文件中设置断点
@@ -35,6 +35,7 @@ LD_GDB_FLAGS = -Ttext $(ENTRYPOINT) -m elf_i386
 # 目标文件定义
 LENBOOT= build/boot/boot.bin build/boot/loader.bin
 LENKERNEL = build/kernel/kernel.bin
+LENKERNELGDB = build/kernel/kernel_gdb.bin
 #中间文件定义
 OBJS = build/kernel/kernel.o build/kernel/kernel_cpp.o build/essential/base.o build/essential/display.o\
  			build/essential/global.o build/essential/memory.o build/iosystem/console.o\
@@ -46,12 +47,12 @@ KERNEL = build/kernel/kernel.bin
 .PHONY : initialize everything clean buildimg realclean image disasm
 
 # make默认从此开始执行,使用bochs开始加载系统
-initialize : buildimg gdb
+initialize : run gdb
 	bochs -f bochsrc
 
 # 删除所有文件
 realclean : 
-	rm -f $(OBJS) $(LENBOOT) $(LENKERNEL)
+	rm -f $(OBJS) $(LENBOOT) $(LENKERNEL) $(LENKERNELGDB)
 
 # 删除中间文件
 clean:
@@ -61,12 +62,13 @@ everything : $(LENBOOT) $(LENKERNEL)
 # 生成镜像文件
 image : everything realclean buildimg
 
-buildimg : $(LENKERNEL) $(LENBOOT)
+run : $(LENKERNEL) $(LENBOOT)
 	dd if=build/boot/boot.bin of=c.img bs=512 count=1 conv=notrunc 
 	sudo mount ./c.img /mnt/floppy
 	sudo cp build/boot/loader.bin /mnt/floppy
 	sudo cp build/kernel/kernel.bin /mnt/floppy
 	sudo umount /mnt/floppy
+
 
 # 生成boot和loader
 build/boot/boot.bin: boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc boot/include/boot_include.asm
@@ -85,7 +87,7 @@ $(KERNEL):$(OBJS)
 	$(LD)  $(LD_FLAGS) -o $@ $^
 
 gdb : $(OBJS)
-	$(LD)  $(LD_GDB_FLAGS) -o build/kernel/kernel_gdb.bin $^
+	$(LD)  $(LD_GDB_FLAGS) -o $(LENKERNELGDB) $^
 
 # 生成中间文件
 

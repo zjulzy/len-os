@@ -1,4 +1,5 @@
 #include "keyboard.h"
+#include "tty.h"
 bool code_with_E0;
 bool shift_l;     /* l shift state */
 bool shift_r;     /* r shift state */
@@ -327,13 +328,22 @@ void in_process(S_TTY *p_tty, u32 key)
         case UP:
             if ((key & FLAG_SHIFT_L) || (key & FLAG_SHIFT_R))
             {
-                set_cursor(80 * 15);
+                scroll_screen(&(tty_table[current_console].console_buffer), true);
             }
             break;
         case DOWN:
             if ((key & FLAG_SHIFT_L) || (key & FLAG_SHIFT_R))
             {
-                /* Shift+Down, do nothing */
+                scroll_screen(&(tty_table[current_console].console_buffer), false);
+            }
+            break;
+        case F1:
+        case F2:
+        case F3:
+            if ((key & FLAG_ALT_L) || (key & FLAG_ALT_R))
+            {
+                int index = raw_code - F1;
+                select_console(index, &(tty_table[index].console_buffer));
             }
             break;
         default:
