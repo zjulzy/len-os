@@ -15,7 +15,7 @@ extern "C"
     void keyboard_read(S_TTY *p_tty);
     u8 get_byte_from_kbuf();
     void in_process(S_TTY *p_tty, u32 key);
-
+    void put_key(S_TTY *p_tty, u32 key);
 #ifdef __cplusplus
 }
 #endif

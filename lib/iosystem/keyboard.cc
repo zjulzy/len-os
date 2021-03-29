@@ -145,7 +145,7 @@ u32 keymap[NR_SCAN_CODES * MAP_COLS] = {
     /* 0x7E - ???		*/ 0, 0, 0,
     /* 0x7F - ???		*/ 0, 0, 0};
 /*======================================================================*
-                           keyboard_read
+                           keyboard_read()解析读入的键盘扫描码
 *======================================================================*/
 void keyboard_read(S_TTY *p_tty)
 {
@@ -309,22 +309,19 @@ void in_process(S_TTY *p_tty, u32 key)
 
     if (!(key & FLAG_EXT))
     {
-        if (p_tty->in_buffer_count < TTY_IN_BYTES)
-        {
-            *(p_tty->in_buffer_head) = key;
-            p_tty->in_buffer_head++;
-            if (p_tty->in_buffer_head == p_tty->in_buffer + TTY_IN_BYTES)
-            {
-                p_tty->in_buffer_head = p_tty->in_buffer;
-            }
-            p_tty->in_buffer_count++;
-        }
+        put_key(p_tty, key);
     }
     else
     {
         int raw_code = key & MASK_RAW;
         switch (raw_code)
         {
+        case ENTER:
+            put_key(p_tty, '\n');
+            break;
+        case BACKSPACE:
+            put_key(p_tty, '\b');
+            break;
         case UP:
             if ((key & FLAG_SHIFT_L) || (key & FLAG_SHIFT_R))
             {
@@ -349,5 +346,18 @@ void in_process(S_TTY *p_tty, u32 key)
         default:
             break;
         }
+    }
+}
+void put_key(S_TTY *p_tty, u32 key)
+{
+    if (p_tty->in_buffer_count < TTY_IN_BYTES)
+    {
+        *(p_tty->in_buffer_head) = key;
+        p_tty->in_buffer_head++;
+        if (p_tty->in_buffer_head == p_tty->in_buffer + TTY_IN_BYTES)
+        {
+            p_tty->in_buffer_head = p_tty->in_buffer;
+        }
+        p_tty->in_buffer_count++;
     }
 }

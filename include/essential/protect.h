@@ -156,6 +156,8 @@ typedef struct s_keyboard
     int count;
     char buffer[KB_IN_BYTES];
 } KB_INPUT;
+
+//tty的输入缓存区
 typedef struct s_tty
 {
     u32 in_buffer[TTY_IN_BYTES];
@@ -163,6 +165,8 @@ typedef struct s_tty
     u32 *in_buffer_tail; /*指向键盘任务应该处理的键值*/
     int in_buffer_count;
 } S_TTY;
+
+//保存tty在显存中的各种位置
 typedef struct s_console
 {
     u32 current_addr;
