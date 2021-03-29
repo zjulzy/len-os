@@ -1,16 +1,16 @@
 #include "keyboard.h"
 #include "tty.h"
-bool code_with_E0;
-bool shift_l;     /* l shift state */
-bool shift_r;     /* r shift state */
-bool alt_l;       /* l alt state	 */
-bool alt_r;       /* r left state	 */
-bool ctrl_l;      /* l ctrl state	 */
-bool ctrl_r;      /* l ctrl state	 */
-bool caps_lock;   /* Caps Lock	 */
-bool num_lock;    /* Num Lock	 */
-bool scroll_lock; /* Scroll Lock	 */
-bool column;
+int code_with_E0;
+u32 shift_l = 0; /* l shift state */
+u32 shift_r = 0; /* r shift state */
+u32 alt_l = 0;   /* l alt state	 */
+u32 alt_r = 0;   /* r left state	 */
+u32 ctrl_l = 0;  /* l ctrl state	 */
+u32 ctrl_r = 0;  /* l ctrl state	 */
+int caps_lock;   /* Caps Lock	 */
+int num_lock;    /* Num Lock	 */
+int scroll_lock; /* Scroll Lock	 */
+int column;
 /* Keymap for US MF-2 keyboard. */
 u32 keymap[NR_SCAN_CODES * MAP_COLS] = {
 
