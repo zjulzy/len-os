@@ -60,35 +60,52 @@
 
 void init_proc()
 {
-    TASK task_table[NR_TASK + 1] = {
+    TASK user_proc_table[NR_USER_PROCESS + 1] = {
         {process_proto, STACK_SIZE_PROTO, "process_proto", 0},
         {process_A, STACK_SIZE_A, "process_A", 1},
         {process_B, STACK_SIZE_B, "process_B", 2},
-        {process_C, STACK_SIZE_C, "process_C", 3},
-        {task_tty, STACK_SIZE_TTY, "process_tty", 4}};
+        {process_C, STACK_SIZE_C, "process_C", 3}};
+    TASK task_table[NR_TASK] = {{task_tty, STACK_SIZE_TTY, "process_tty", 4}};
     PROCESS *p_process = proc_table;
     TASK *p_task = task_table;
     u16 selector_ldt = SELECTOR_LDT_FIRST;
     u32 remain_stack_size = STACK_SIZE_TOTAL;
+    int eflags;
+    u8 privilege, rpl;
+    //分别对用户进程和任务进程分配PCB
     for (int i = 0; i <= NR_TASK; i++)
     {
+        if (i < NR_TASK)
+        {
+            p_task = task_table + i;
+            privilege = PRIVILEGE_TASK;
+            rpl = RPL_TASK;
+            eflags = 0x1202;
+        }
+        else
+        {
+            p_task = user_proc_table + i - NR_TASK;
+            privilege = PRIVILEGE_USER;
+            rpl = RPL_USER;
+            eflags = 0x202; //无IO权限
+        }
         p_process->pid = p_task->pid;
         p_process->ldt_sel = selector_ldt;
 
         memcpy(&p_process->ldts[0], &gdt[SELECTOT_KERNEL_C >> 3], sizeof(DESCRIPTOR));
-        p_process->ldts[0].attr1 = DAC_E | PRIVILEGE_TASK << 5;
+        p_process->ldts[0].attr1 = DAC_E | privilege << 5;
         memcpy(&p_process->ldts[1], &gdt[SELECTOR_KERNEL_RW >> 3], sizeof(DESCRIPTOR));
-        p_process->ldts[1].attr1 = DAD_RW | PRIVILEGE_TASK << 5;
+        p_process->ldts[1].attr1 = DAD_RW | privilege << 5;
 
-        p_process->regs.cs = (0 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
-        p_process->regs.ds = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
-        p_process->regs.es = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
-        p_process->regs.fs = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
-        p_process->regs.ss = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | RPL_TASK;
-        p_process->regs.gs = (SELECTOR_KERNEL_GS & SA_RPL_MASK) | RPL_TASK;
+        p_process->regs.cs = (0 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
+        p_process->regs.ds = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
+        p_process->regs.es = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
+        p_process->regs.fs = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
+        p_process->regs.ss = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
+        p_process->regs.gs = (SELECTOR_KERNEL_GS & SA_RPL_MASK) | rpl;
         p_process->regs.eip = (u32)(p_task->initial_eip);
         p_process->regs.esp = (u32)task_stack + remain_stack_size;
-        p_process->regs.eflags = 0x1202; // IF=1, IOPL=1, bit 2 is always 1.+
+        p_process->regs.eflags = eflags; // IF=1, IOPL=1, bit 2 is always 1.+
 
         p_process++;
         p_task++;
@@ -100,7 +117,7 @@ void init_proc()
     p_process->next_pcb = p_process;
     p_process->ticks = 0;
     process_queen1_head = p_process + 1;
-    for (int i = 1; i <= NR_TASK; i++)
+    for (int i = 1; i <= NR_TASK + NR_USER_PROCESS; i++)
     {
         p_process++;
         p_process->ticks = FIRST_QUENE_SLICE;
@@ -157,7 +174,6 @@ void process_proto()
     while (1)
     {
 
-        disp_str("p");
         delay(10);
     }
 }

@@ -31,6 +31,7 @@ extern "C"
     extern char task_stack[];
     extern PROCESS *p_proc_ready;
     extern TASK task_table[];
+    extern TASK user_proc_table[];
 
     //系统调用相关变量
     extern int ticks;

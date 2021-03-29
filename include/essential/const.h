@@ -54,8 +54,9 @@
 #define IDT_SIZE 256
 //每个进程允许使用的ldt数目
 #define LDT_SIZE 2
-
-#define NR_TASK 4
+//定义任务以及用户进程数目
+#define NR_TASK 1
+#define NR_USER_PROCESS 3
 //===========================================================
 //GDT相关
 //描述符索引,用于在c文件中确定选择子对应的描述符数组下标

@@ -45,6 +45,8 @@ void TTY::print(char out)
         if (console_buffer.cursor < console_buffer.v_mem_addr + console_buffer.v_mem_limit - SCREEN_WIDTH * 2)
         {
             console_buffer.cursor = console_buffer.v_mem_addr + SCREEN_WIDTH * 2 * ((console_buffer.cursor - console_buffer.v_mem_addr) / SCREEN_WIDTH / 2 + 1);
+            print('0' + id);
+            print('>');
         }
         break;
     case '\b':

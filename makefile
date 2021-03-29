@@ -46,6 +46,8 @@ KERNEL = build/kernel/kernel.bin
 # 本makefile支持的所有操作
 .PHONY : initialize everything clean buildimg realclean image disasm
 
+
+# =======================================================================================
 # make默认从此开始执行,使用bochs开始加载系统
 initialize : run gdb
 	bochs -f bochsrc
