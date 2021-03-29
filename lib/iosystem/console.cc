@@ -32,18 +32,18 @@ void scroll_screen(S_CONSOLE *console, bool up)
     {
         if (console->current_addr > console->v_mem_addr)
         {
-            console->current_addr -= SCREEN_WIDTH;
-            console->cursor -= SCREEN_WIDTH;
+            console->current_addr -= SCREEN_WIDTH * 2;
+            //console->cursor -= SCREEN_WIDTH * 2;
         }
     }
     else
     {
         if (console->current_addr + SCREEN_SIZE < (console->v_mem_addr + console->v_mem_limit))
         {
-            console->current_addr += SCREEN_WIDTH;
-            console->cursor += SCREEN_WIDTH;
+            console->current_addr += SCREEN_WIDTH * 2;
+            //console->cursor += SCREEN_WIDTH * 2;
         }
     }
     set_video_addr(console->current_addr);
-    set_cursor(console->cursor);
+    //set_cursor(console->cursor);
 }
