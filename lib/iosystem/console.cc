@@ -1,4 +1,5 @@
 #include "console.h"
+#include "syscall.h"
 //通过开关中断操作VGA寄存器的值改变光标位置和当前控制台在显存中的位置================================
 void set_cursor(unsigned int position)
 {
@@ -46,4 +47,19 @@ void scroll_screen(S_CONSOLE *console, bool up)
     }
     set_video_addr(console->current_addr);
     //set_cursor(console->cursor);
+}
+
+//为用户进程提供终端输出功能
+int printf(const char *fmt)
+{
+    int result;
+    char buffer[256];
+    //从堆栈中提取其他参数格式化字符串并将其放入缓存区
+    char *p;
+    for (p = buffer; *fmt; fmt++)
+    {
+        *p++ = *fmt;
+    }
+    write(buffer, p - buffer);
+    return 1;
 }

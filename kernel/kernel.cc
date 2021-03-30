@@ -41,7 +41,7 @@ void init_gdt()
 void init_ldt()
 {
     u32 index_selector_ldt = INDEX_LDT_FIRST;
-    for (int i = 0; i <= NR_TASK + NR_USER_PROCESS; i++)
+    for (int i = 0; i < NR_TASK + NR_USER_PROCESS; i++)
     {
         init_descriptor(&gdt[index_selector_ldt], vir2phy(seg2phys(SELECTOR_KERNEL_RW), proc_table[i].ldts), LDT_SIZE * sizeof(DESCRIPTOR) - 1, DA_LDT);
         index_selector_ldt += 1;

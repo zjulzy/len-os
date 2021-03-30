@@ -72,6 +72,8 @@ typedef struct s_proc
     int ticks;
     int priority;
 
+    // 为进程指定终端进行输出
+    int tty;
     u32 pid;
     char p_name[16];
 

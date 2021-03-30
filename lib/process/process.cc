@@ -1,4 +1,5 @@
 #include "process.h"
+#include "console.h"
 // int init_proc()
 // {
 //     disp_clear();
@@ -60,8 +61,8 @@
 
 void init_proc()
 {
-    TASK user_proc_table[NR_USER_PROCESS + 1] = {
-        {process_proto, STACK_SIZE_PROTO, "process_proto", 0},
+    TASK user_proc_table[NR_USER_PROCESS] = {
+        //{process_proto, STACK_SIZE_PROTO, "process_proto", 0},
         {process_A, STACK_SIZE_A, "process_A", 1},
         {process_B, STACK_SIZE_B, "process_B", 2},
         {process_C, STACK_SIZE_C, "process_C", 3}};
@@ -73,7 +74,7 @@ void init_proc()
     int eflags;
     u8 privilege, rpl;
     //分别对用户进程和任务进程分配PCB
-    for (int i = 0; i <= NR_TASK; i++)
+    for (int i = 0; i < NR_TASK + NR_USER_PROCESS; i++)
     {
         if (i < NR_TASK)
         {
@@ -115,16 +116,21 @@ void init_proc()
 
     p_process = proc_table;
     p_process->next_pcb = p_process;
-    p_process->ticks = 0;
+    p_process->ticks = LAST_QUENE_SLICE;
+    process_tail = proc_table;
     process_queen1_head = p_process + 1;
-    for (int i = 1; i <= NR_TASK + NR_USER_PROCESS; i++)
+    for (int i = 1; i < NR_TASK + NR_USER_PROCESS; i++)
     {
         p_process++;
         p_process->ticks = FIRST_QUENE_SLICE;
-        p_process->next_pcb = i == NR_TASK ? process_tail : p_process + 1;
+        p_process->next_pcb = i == NR_TASK + NR_USER_PROCESS - 1 ? process_tail : p_process + 1;
     }
     process_queen1_tail = p_process;
     p_proc_ready = process_queen1_head;
+    //为进程指定终端
+    proc_table[1].tty = 0;
+    proc_table[2].tty = 0;
+    proc_table[3].tty = 0;
 }
 //通过task初始化一个pcb,传入pcb地址,初始化pcb结构数据
 //task确定pcb将要插入的优先级队列
@@ -183,7 +189,7 @@ void process_A()
     while (1)
     {
 
-        //disp_str("A");
+        printf("A");
         delay(10);
     }
 }

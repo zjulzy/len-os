@@ -25,6 +25,7 @@
     extern clock_handler
     extern interrupt_request
     extern sys_call_handler
+    extern p_proc_ready
 
     global restart
     global sys_call
@@ -101,9 +102,12 @@ kernel_start:
 sys_call:
     call save 
     sti 
+    push dword [p_proc_ready]
+    push ecx
+    push ebx
     push eax 
     call sys_call_handler
-    add esp,4
+    add esp,4*4
     mov [esi+EAXREG-P_STACKBASE],eax 
     cli 
     ret

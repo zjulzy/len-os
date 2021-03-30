@@ -65,7 +65,6 @@ void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head, P
     curr->ticks--;
     if (curr->ticks == 0)
     {
-
         curr->ticks = next_ticks;
         curr_head = curr->next_pcb;
         if (next_tail != tail)
@@ -101,21 +100,18 @@ void clock_handler()
         if (process_queen2_tail == process_tail)
         {
 
-            if (p_proc_ready == process_tail)
+            p_proc_ready->ticks--;
+            if (p_proc_ready->ticks == 0)
             {
-            }
-            else
-            {
-                //disp_int(p_proc_ready->pid);
-                p_proc_ready->ticks--;
-                if (p_proc_ready->ticks == 0)
+                p_proc_ready->ticks = LAST_QUENE_SLICE;
+
+                if (p_proc_ready == process_tail)
                 {
-                    p_proc_ready->ticks = LAST_QUENE_SLICE;
+                    p_proc_ready = process_queen3_head;
+                }
+                else
+                {
                     p_proc_ready = p_proc_ready->next_pcb;
-                    if (p_proc_ready == process_tail)
-                    {
-                        p_proc_ready = process_queen3_head;
-                    }
                 }
             }
         }

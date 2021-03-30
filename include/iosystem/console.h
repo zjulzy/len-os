@@ -12,6 +12,7 @@ extern "C"
     void select_console(int console_index, S_CONSOLE *console);
     void set_video_addr(u32 addr);
     void scroll_screen(S_CONSOLE *console, bool up);
+    int printf(const char *fmt);
 #ifdef __cplusplus
 }
 #endif

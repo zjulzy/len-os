@@ -69,6 +69,7 @@ void TTY::print(char out)
     set_cursor(console_buffer.cursor);
     set_video_addr(console_buffer.current_addr);
 }
+
 // ===============================================================================
 bool is_current_console(TTY *tty)
 {
