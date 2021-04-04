@@ -175,14 +175,33 @@ void init_proc()
 //     proc->regs.eflags = 0x1202;
 // }
 
-void process_proto()
+bool is_deadlock(PROCESS *src, PROCESS *dest)
 {
     while (1)
     {
-
-        delay(10);
+        if (dest->flags & SENDING)
+        {
+            if (dest->send_to_record == src)
+            {
+                return true;
+            }
+        }
+        else
+        {
+            break;
+        }
     }
+    return false;
 }
+
+// void process_proto()
+// {
+//     while (1)
+//     {
+
+//         delay(10);
+//     }
+// }
 
 void process_A()
 {
@@ -223,4 +242,136 @@ void delay(int time)
             }
         }
     }
+}
+int ldt_seg_linear(PROCESS *p, int idt)
+{
+    DESCRIPTOR *d = &p->ldts[idt];
+    return d->base_high << 24 | d->base_mid << 16 | d->base_low;
+}
+void *vir2line(PROCESS *p, void *va)
+{
+    u32 seg_base = ldt_seg_linear(p, INDEX_LDT_RW);
+    u32 la = seg_base + (u32)va;
+    return (void *)la;
+}
+// ipc系统调用发送信息
+// 主要步骤为：
+// 1.判断是否发生死锁，发生死锁终止信息发送或者报panic
+// 2.判断目标进程是否正在等待来自本进程的消息
+// 3.如果正在等待本进程的消息，将消息复制给目标进程的空白消息体，目标进程解除阻塞
+// 4.如果目标进程没有在等待本进程的消息，本进程被阻塞并且加入目标进程的发送队列
+int send_msg(PROCESS *src, int dest, MESSAGE *msg)
+{
+    PROCESS *p_dest = proc_table + dest;
+    if (is_deadlock(src, p_dest))
+    {
+        //TODO:panic
+    }
+    if (p_dest->flags & RECEIVING)
+    {
+        if (p_dest->recv_from_record == src->pid or p_dest->recv_from_record == ANY)
+        {
+            memcpy(vir2line(p_dest, p_dest->message), vir2line(src, msg), sizeof(MESSAGE));
+            p_dest->message = 0;
+            p_dest->flags = RUNNING;
+            p_dest->recv_from_record = NO_TASK;
+            unblock(p_dest);
+        }
+        else
+        {
+            //目标进程没有等待
+            src->send_to_record = dest;
+            if (auto p = p_dest->receive_quene; p)
+            {
+                while (p->next_sending)
+                {
+                    p = p->next_sending;
+                }
+                p->next_sending = src;
+            }
+            else
+            {
+                p_dest->receive_quene = src;
+            }
+            src->next_sending = nullptr;
+            block(src, SENDING);
+        }
+    }
+    return 0;
+}
+
+// ipc系统调用接受信息
+// 主要步骤为：
+// 1.判断本进程是否有来自硬件的中断
+// 2.如果有来自硬件的中断，且本进程可以接受来自中断的信息，则直接返回信息
+// 3.若本进程的发送队列中有进程符合本进程接受信息需求，将其信息复制给本进程的空白信息体
+// 4.如果没有合适的进程，本进程进入阻塞状态
+int receive_msg(PROCESS *dest, int src, MESSAGE *msg)
+{
+    PROCESS *p_src = nullptr;
+    if (dest->has_int_msg and (src == ANY or src == INTERRUPT))
+    {
+        dest->message->source = INTERRUPT;
+        dest->message->type = MSG_TYPE_INT;
+        dest->has_int_msg = 0;
+        return 0;
+    }
+    if (src == ANY)
+    {
+        if (auto p_send = dest->receive_quene; p_send)
+        {
+            dest->receive_quene = p_send->next_sending;
+            p_send->next_sending = nullptr;
+            memcpy(vir2line(dest, msg), vir2line(p_send, p_send->message), sizeof(MESSAGE));
+            p_send->message = 0;
+            p_send->send_to_record = NO_TASK;
+            unblock(p_send);
+        }
+        else
+        {
+            dest->recv_from_record = ANY;
+            block(dest, RECEIVING);
+        }
+    }
+    else if ((&proc_table[src])->flags == SENDING and (&proc_table[src])->send_to_record == dest->pid)
+    {
+        auto p_send = dest->receive_quene;
+        PROCESS *p_prev = nullptr;
+        while (p_send->pid != src)
+        {
+            p_prev = p_send;
+            p_send = p_send->next_sending;
+            if (!p_send)
+            {
+                dest->recv_from_record = src;
+                block(dest, RECEIVING);
+                return 0;
+            }
+        }
+        memcpy(vir2line(dest, msg), vir2line(p_send, p_send->message), sizeof(MESSAGE));
+        p_send->message = 0;
+        p_send->send_to_record = NO_TASK;
+        unblock(p_send);
+        if (p_prev)
+        {
+            p_prev = p_send->next_sending;
+        }
+        else
+        {
+            dest->receive_quene = p_send->next_sending;
+        }
+
+        p_send->next_sending = nullptr;
+        return 0;
+    }
+}
+
+void unblock(PROCESS *p)
+{
+    p->flags = RUNNING;
+    return;
+}
+void block(PROCESS *p, int value)
+{
+    p->flags = value;
 }

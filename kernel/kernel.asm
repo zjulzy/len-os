@@ -102,7 +102,7 @@ kernel_start:
 sys_call:
     call save 
     sti 
-    push dword [p_proc_ready]
+    push edx
     push ecx
     push ebx
     push eax 
@@ -283,10 +283,19 @@ save:
     push fs 
     push gs
     ; 令es和ds指向ss同样的位置
+    ; 注意此时可能有的寄存器保存着系统调用的参数
+    mov esi, edx
+
+
     mov dx,ss 
     mov ds,dx 
     mov es,dx 
+    mov fs,dx
+    mov gs,dx
+
+    mov edx,esi
     mov esi,esp
+    
     ; 如果当前由同一中断正在处理，就执行中断重入
     inc dword[int_reenter]
     cmp  dword[int_reenter],0

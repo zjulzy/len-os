@@ -27,6 +27,66 @@ typedef struct s_gate
     u16 offset_high; // Offset High
 } GATE;
 
+// 以下内容改自Minix
+// output子系统信息结构体, 信息类型为OUTPUT_SYSTEM (0)
+struct OUTPUT_MESSAGE
+{
+    char function;     // 执行的功能 --> 显示字符==0 特殊功能==1
+    int console_index; // 要输出的控制台指针
+    u32 pid;           // 发送进程的pid,用于确定要显示字符的内存地址
+    char *data;        // 要显示字符的指针
+    char disp_func;    // 执行的具体功能
+};
+// input子系统信息
+struct INPUT_MESSAGE
+{
+    int input_source; // input输入源
+    KEYMAP_RESULT keyboard_result;
+};
+// 硬盘操作信息
+struct DISK_MESSAGE
+{
+    u8 function;     // 执行的操作类型
+    u32 pid;         // 信息来源进程
+    char *buffer;    // 缓冲区指针
+    u32 sector_head; // 操作的起始位置
+    int bytes_count; //读取的字节数
+    u8 result;       // 磁盘操作的结果
+};
+struct FS_MESSAGE
+{
+    u8 function;                // 执行的操作类型
+    u32 pid;                    // 信息来源 进程
+    struct file_descriptor *fd; // 文件描述符指针
+    char *buffer;               // 数据缓冲区
+    u32 count;                  // 读取的大小
+    u8 result;                  //返回值结果
+    char *file_name;            // 文件名字
+};
+struct MEM_MESSAGE
+{
+    u8 function;        // 执行的操作类型
+    u32 pid;            // 信息来源进程
+    struct inode *file; // 目标文件
+    // 创建子进程: -1: 创建失败  0~MAX_PRO_NUM : 子进程pid
+    int result; //返回值结果
+};
+
+typedef struct mess
+{
+    int source;
+    int type;
+    union
+    {
+        struct OUTPUT_MESSAGE output_message;
+        struct INPUT_MESSAGE input_message;
+        struct DISK_MESSAGE disk_message;
+        struct FS_MESSAGE fs_message;
+        struct MEM_MESSAGE mem_message;
+    } u;
+} MESSAGE;
+
+// 进程相关---------------------------------------------------------------------------------
 // 进程控制块PCB中存放的关于程序运行状态的信息
 typedef struct s_stackframe
 {
@@ -60,8 +120,9 @@ typedef struct s_stackframe
 
 // 进程控制块PCB组成单元
 // 存放了程序运行状态信息,ldt选择子,进程调度信息,进程id,进程名字
-typedef struct s_proc
+typedef class s_proc
 {
+public:
     STACK_FRAME regs;
 
     //虽然下面接着就是局部描述符表,但是这个ldt_sel依然有存在的意义
@@ -81,7 +142,7 @@ typedef struct s_proc
     struct s_proc *pre_pcb;
     struct s_proc *next_pcb;
 
-    // 进程间通信需要用到的数据
+    // 进程间通信需要用到的数据，进程调度根据这个标志进行阻塞
     // 进程状态标志
     // 0 --> 正常执行
     // 2 --> 发送信息阻塞中
@@ -92,19 +153,21 @@ typedef struct s_proc
     // 尝试发送信息的对象
     // 尝试接收信息的源
     struct mess *message;
-    int recv_from;
-    int send_to;
+    int send_to_record;
+    int recv_from_record;
 
     // 0 --> ready to handle an interupt
     // 1 --> handling an interupt
     // 操作系统通过把这一位从0设为1来通知中断的发生
     int has_int_msg;
 
-    // 希望发信息给该进程的进程的链表
-    struct s_proc *sending_to_this;
+    // 该进程的接收消息队列
+    PROCESS *receive_quene;
     // 用于产生链表结构的指针
-    struct s_proc *next_sending;
-
+    // 一个进程只能在一个接受队列中，因此使用指针用来表示接受队列中下一个进程
+    PROCESS *next_sending;
+    int send_msg(int dest);
+    int receive_msg(int src);
 } PROCESS;
 
 // 这个结构体用来定义系统初始进程
@@ -117,7 +180,7 @@ typedef struct s_task
     //int priority;
     u32 pid;
 } TASK;
-
+//-----------------------------------------------------------------------------------
 //tss结构体
 typedef struct s_tss
 {

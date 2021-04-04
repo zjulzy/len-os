@@ -78,6 +78,12 @@
 #define SELECTOT_KERNEL_C SELECTOR_FLAT_C
 #define SELECTOR_KERNEL_RW SELECTOR_FLAT_RW
 #define SELECTOR_KERNEL_GS SELECTOR_VIDEO
+
+/* 每个任务有一个单独的 LDT, 每个 LDT 中的描述符个数: */
+#define LDT_SIZE 2
+/* descriptor indices in LDT */
+#define INDEX_LDT_C 0
+#define INDEX_LDT_RW 1
 //===========================================================
 //线性地址转为物理地址
 #define vir2phy(seg_base, vir) (u32)(((u32)seg_base) + (u32)vir)
@@ -257,4 +263,11 @@
 #define V_MEM_BASE 0xB8000
 #define V_MEM_SIZE 0x8000
 //=====================================================================================
+#define RUNNING 0
+#define SENDING 0x2
+#define RECEIVING 0x4
+#define ANY -1
+#define NO_TASK -2
+#define INTERRUPT -3
+#define MSG_TYPE_INT 1
 #endif
