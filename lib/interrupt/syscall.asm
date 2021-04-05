@@ -6,6 +6,7 @@ INDEX_IPC equ 2
 INT_VECTOR_SYS_CALL equ 0x90
 bits 32
 [SECTION .text]
+extern p_proc_ready
 global get_ticks 
 global write
 global ipc
@@ -21,7 +22,9 @@ write:
     mov edx,dword [p_proc_ready]
     int INT_VECTOR_SYS_CALL
     ret
-ipc：
+
+
+ipc:
     mov eax,INDEX_WRITE
     mov ebx,[esp+4]
     mov ecx,[esp+8]

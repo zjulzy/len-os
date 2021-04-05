@@ -40,8 +40,8 @@ LENKERNELGDB = build/kernel/kernel_gdb.bin
 OBJS = build/kernel/kernel.o build/kernel/kernel_cpp.o build/essential/base.o build/essential/display.o\
  			build/essential/global.o build/essential/memory.o \
 			build/interrupt/interrupt.o build/interrupt/interrupt_asm.o build/essential/proto.o \
-			build/process/process.o build/interrupt/syscall.o build/interrupt/syscall_asm.o\
-			build/iosystem/keyboard.o build/process/tty.o build/iosystem/console.o
+			 build/interrupt/syscall.o build/interrupt/syscall_asm.o\
+			build/iosystem/keyboard.o build/process/tty.o build/iosystem/console.o build/process/process.o
 KERNEL = build/kernel/kernel.bin
 # 本makefile支持的所有操作
 .PHONY : initialize everything clean buildimg realclean image disasm

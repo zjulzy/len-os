@@ -9,7 +9,7 @@ extern "C"
     int sys_call_handler(int syc_code, char *buffer, int len, PROCESS *p_proc);
     void sys_call();
     void write(char *buffer, int length);
-    int ipc(PROCESS *P, int target);
+    int ipc(int function, PROCESS *P, int target);
 #ifdef __cplusplus
 }
 #endif

@@ -1,5 +1,19 @@
 #include "process.h"
 #include "console.h"
+#include "interrupt.h"
+#include "syscall.h"
+#include "memory.h"
+// 实现定义在protect.h中的pcb对象的方法-------------------------------------------------
+// 进程收发消息时，通过ipc系统调用
+int PROCESS::send_msg(int dest)
+{
+    ipc(SENDING, this, dest);
+}
+int PROCESS::receive_msg(int src)
+{
+    ipc(RECEIVING, this, src);
+}
+// ----------------------------------------------------------------------------------
 // int init_proc()
 // {
 //     disp_clear();
@@ -107,7 +121,9 @@ void init_proc()
         p_process->regs.eip = (u32)(p_task->initial_eip);
         p_process->regs.esp = (u32)task_stack + remain_stack_size;
         p_process->regs.eflags = eflags; // IF=1, IOPL=1, bit 2 is always 1.+
-
+        p_process->flags = RUNNING;
+        p_process->message = 0;
+        p_process->receive_quene = p_process->next_sending = nullptr;
         p_process++;
         p_task++;
         selector_ldt += 1 << 3;
@@ -181,7 +197,7 @@ bool is_deadlock(PROCESS *src, PROCESS *dest)
     {
         if (dest->flags & SENDING)
         {
-            if (dest->send_to_record == src)
+            if (dest->send_to_record == src - proc_table)
             {
                 return true;
             }

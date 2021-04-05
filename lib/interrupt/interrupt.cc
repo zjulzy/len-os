@@ -59,6 +59,22 @@ void init_clock()
 }
 //====================================================================================================
 
+//在进程队列中寻找没有被阻塞的进程
+PROCESS *find_first(PROCESS *head, PROCESS *tail)
+{
+    PROCESS *p = head;
+    if (tail == process_tail)
+        return nullptr;
+    if (tail->flags == RUNNING)
+        return p;
+    while (p != tail)
+    {
+        if (p->flags == RUNNING)
+            return p;
+    }
+    return nullptr;
+}
+
 //中断处理==============================================================================================
 void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head, PROCESS *&next_tail, PROCESS *&curr, PROCESS *&tail, int next_ticks)
 {
@@ -95,9 +111,9 @@ void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head, P
 void clock_handler()
 {
     //disp_str("#");
-    if (process_queen1_tail == process_tail)
+    if (!find_first(process_queen1_head, process_queen1_tail))
     {
-        if (process_queen2_tail == process_tail)
+        if (!find_first(process_queen1_head, process_queen1_tail))
         {
 
             p_proc_ready->ticks--;

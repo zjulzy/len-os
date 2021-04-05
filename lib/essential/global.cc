@@ -29,6 +29,8 @@ PROCESS *process_queen2_tail = proc_table;
 PROCESS *process_queen3_head = proc_table;
 PROCESS *process_queen3_tail = proc_table;
 PROCESS *process_tail = proc_table;
+// PROCESS *process_blocked_head;
+// PROCESS *process_blocked_tail;
 KB_INPUT kb_buffer;
 // 当前显示终端
 int current_console;

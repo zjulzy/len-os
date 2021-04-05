@@ -26,7 +26,11 @@ typedef struct s_gate
     u8 attr;         // P(1) DPL(2) DT(1) TYPE(4)
     u16 offset_high; // Offset High
 } GATE;
-
+typedef struct s_keyrmap_result
+{
+    key_type type;  //键值的类型
+    key_value data; //键值的数据
+} KEYMAP_RESULT;
 // 以下内容改自Minix
 // output子系统信息结构体, 信息类型为OUTPUT_SYSTEM (0)
 struct OUTPUT_MESSAGE
@@ -162,10 +166,10 @@ public:
     int has_int_msg;
 
     // 该进程的接收消息队列
-    PROCESS *receive_quene;
+    s_proc *receive_quene;
     // 用于产生链表结构的指针
     // 一个进程只能在一个接受队列中，因此使用指针用来表示接受队列中下一个进程
-    PROCESS *next_sending;
+    s_proc *next_sending;
     int send_msg(int dest);
     int receive_msg(int src);
 } PROCESS;

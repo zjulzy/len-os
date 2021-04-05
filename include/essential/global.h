@@ -43,9 +43,9 @@ extern "C"
     extern PROCESS *process_queen3_head;
     extern PROCESS *process_queen3_tail;
     extern PROCESS *process_tail;
-    // //阻塞状态队列
+    //阻塞状态队列
     // extern PROCESS *process_blocked_head;
-    // extern PROCESS process_blocked_tail;
+    // extern PROCESS *process_blocked_tail;
     extern KB_INPUT kb_buffer;
     extern int current_console;
 #ifdef __cplusplus
