@@ -65,13 +65,15 @@ PROCESS *find_first(PROCESS *head, PROCESS *tail)
     PROCESS *p = head;
     if (tail == process_tail)
         return nullptr;
-    if (tail->flags == RUNNING)
-        return p;
+
     while (p != tail)
     {
         if (p->flags == RUNNING)
             return p;
+        p = p->next_pcb;
     }
+    if (tail->flags == RUNNING)
+        return p;
     return nullptr;
 }
 
@@ -82,7 +84,17 @@ void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head, P
     if (curr->ticks == 0)
     {
         curr->ticks = next_ticks;
-        curr_head = curr->next_pcb;
+        if (curr_head == curr)
+            curr_head = curr->next_pcb;
+        else
+        {
+            auto p = curr_head;
+            while (p->next_pcb != curr)
+            {
+                p = p->next_pcb;
+            }
+            p->next_pcb = curr->next_pcb;
+        }
         if (next_tail != tail)
         {
             next_tail->next_pcb = curr;
@@ -97,27 +109,31 @@ void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head, P
         }
         if (curr_tail == curr)
         {
-            curr = next_head;
-            curr_tail = tail;
+            //curr = next_head;
+            //curr_tail = tail;
+            auto p = curr_head;
+            while (p->next_pcb != tail)
+            {
+                p = p->next_pcb;
+            }
+            curr_tail = p;
         }
         else
         {
-            curr = curr_head;
+            //curr = curr_head;
         }
     }
 }
 
-//时钟中断处理函数
-void clock_handler()
+void schedule()
 {
-    //disp_str("#");
-    if (!find_first(process_queen1_head, process_queen1_tail))
+    if (PROCESS *p_first = find_first(process_queen1_head, process_queen1_tail); !p_first)
     {
-        if (!find_first(process_queen1_head, process_queen1_tail))
+        if (PROCESS *p_second = find_first(process_queen2_head, process_queen2_tail); !p_second)
         {
 
             p_proc_ready->ticks--;
-            if (p_proc_ready->ticks == 0)
+            if (p_proc_ready->ticks == 0 or p_proc_ready->flags != RUNNING)
             {
                 p_proc_ready->ticks = LAST_QUENE_SLICE;
 
@@ -133,14 +149,20 @@ void clock_handler()
         }
         else
         {
+            p_proc_ready = p_second;
             next_quene(process_queen2_head, process_queen2_tail, process_queen3_head, process_queen3_tail, p_proc_ready, process_tail, LAST_QUENE_SLICE);
         }
     }
     else
     {
+        p_proc_ready = p_first;
         next_quene(process_queen1_head, process_queen1_tail, process_queen2_head, process_queen2_tail, p_proc_ready, process_tail, SECOND_QUENE_SLICE);
     }
-
+}
+//时钟中断处理函数
+void clock_handler()
+{
+    schedule();
     ticks++;
 }
 void interrupt_request(int irq)

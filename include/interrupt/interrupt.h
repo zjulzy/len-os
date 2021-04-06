@@ -11,7 +11,7 @@ extern "C"
 #endif
     void interruptInitialize();
     void init_8259A();
-
+    void schedule();
     void interrupt_request(int irq);
     void disable_irq(int irq);
     void enable_irq(int irq);

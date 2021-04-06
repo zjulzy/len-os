@@ -3,16 +3,7 @@
 #include "interrupt.h"
 #include "syscall.h"
 #include "memory.h"
-// 实现定义在protect.h中的pcb对象的方法-------------------------------------------------
-// 进程收发消息时，通过ipc系统调用
-int PROCESS::send_msg(int dest)
-{
-    ipc(SENDING, this, dest);
-}
-int PROCESS::receive_msg(int src)
-{
-    ipc(RECEIVING, this, src);
-}
+
 // ----------------------------------------------------------------------------------
 // int init_proc()
 // {
@@ -77,10 +68,12 @@ void init_proc()
 {
     TASK user_proc_table[NR_USER_PROCESS] = {
         //{process_proto, STACK_SIZE_PROTO, "process_proto", 0},
-        {process_A, STACK_SIZE_A, "process_A", 1},
-        {process_B, STACK_SIZE_B, "process_B", 2},
-        {process_C, STACK_SIZE_C, "process_C", 3}};
-    TASK task_table[NR_TASK] = {{task_tty, STACK_SIZE_TTY, "process_tty", 4}};
+        {process_A, STACK_SIZE_A, "process_A", 2},
+        {process_B, STACK_SIZE_B, "process_B", 3},
+        {process_C, STACK_SIZE_C, "process_C", 4}};
+    TASK task_table[NR_TASK] = {
+        {task_tty, STACK_SIZE_TTY, "process_tty", 0},
+        {task_system, STACK_SIZE_SYSTEM, "process_syatem", 1}};
     PROCESS *p_process = proc_table;
     TASK *p_task = task_table;
     u16 selector_ldt = SELECTOR_LDT_FIRST;
@@ -144,9 +137,9 @@ void init_proc()
     process_queen1_tail = p_process;
     p_proc_ready = process_queen1_head;
     //为进程指定终端
-    proc_table[1].tty = 0;
     proc_table[2].tty = 0;
     proc_table[3].tty = 0;
+    proc_table[4].tty = 0;
 }
 //通过task初始化一个pcb,传入pcb地址,初始化pcb结构数据
 //task确定pcb将要插入的优先级队列
@@ -218,14 +211,24 @@ bool is_deadlock(PROCESS *src, PROCESS *dest)
 //         delay(10);
 //     }
 // }
-
+int get_ticks()
+{
+    MESSAGE msg;
+    memset(&msg, 0, sizeof(MESSAGE));
+    msg.type = INDEX_SYSCALL_GET_TICKS;
+    if (ipc(INDEX_SYSCALL_IPC_SEND, PID_SYSTEM, &msg) == 0)
+    {
+        ipc(INDEX_SYSCALL_IPC_RECEIVE, PID_SYSTEM, &msg);
+    }
+    return msg.value;
+}
 void process_A()
 {
     while (1)
     {
-
-        printf("A");
-        delay(10);
+        char str[8];
+        printf(itoa(str, get_ticks()));
+        delay(20);
     }
 }
 void process_B()
@@ -279,6 +282,7 @@ void *vir2line(PROCESS *p, void *va)
 int send_msg(PROCESS *src, int dest, MESSAGE *msg)
 {
     PROCESS *p_dest = proc_table + dest;
+    msg->source = src - proc_table;
     if (is_deadlock(src, p_dest))
     {
         //TODO:panic
@@ -297,6 +301,8 @@ int send_msg(PROCESS *src, int dest, MESSAGE *msg)
         {
             //目标进程没有等待
             src->send_to_record = dest;
+            //设置待发送消息体指针，便于接受进程寻找消息体
+            src->message = msg;
             if (auto p = p_dest->receive_quene; p)
             {
                 while (p->next_sending)
@@ -311,6 +317,7 @@ int send_msg(PROCESS *src, int dest, MESSAGE *msg)
             }
             src->next_sending = nullptr;
             block(src, SENDING);
+            schedule();
         }
     }
     return 0;
@@ -345,8 +352,10 @@ int receive_msg(PROCESS *dest, int src, MESSAGE *msg)
         }
         else
         {
+            dest->message = msg;
             dest->recv_from_record = ANY;
             block(dest, RECEIVING);
+            schedule();
         }
     }
     else if ((&proc_table[src])->flags == SENDING and (&proc_table[src])->send_to_record == dest->pid)
@@ -378,8 +387,15 @@ int receive_msg(PROCESS *dest, int src, MESSAGE *msg)
         }
 
         p_send->next_sending = nullptr;
-        return 0;
     }
+    else
+    {
+        dest->message = msg;
+        dest->recv_from_record = src;
+        block(dest, RECEIVING);
+        schedule();
+    }
+    return 0;
 }
 
 void unblock(PROCESS *p)

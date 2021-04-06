@@ -13,7 +13,7 @@ extern "C"
     void process_A();
     void process_B();
     void process_C();
-    void system_task();
+    void task_system();
     void delay(int time);
     void task_tty();
     void init_proc();

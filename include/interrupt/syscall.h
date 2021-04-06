@@ -5,11 +5,11 @@
 extern "C"
 {
 #endif
-    int get_ticks();
+    // int get_ticks();
     int sys_call_handler(int syc_code, char *buffer, int len, PROCESS *p_proc);
     void sys_call();
     void write(char *buffer, int length);
-    int ipc(int function, PROCESS *P, int target);
+    int ipc(int function, int target, MESSAGE *msg);
 #ifdef __cplusplus
 }
 #endif

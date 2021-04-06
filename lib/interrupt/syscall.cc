@@ -11,19 +11,16 @@ int sys_call_handler(int syc_code, char *buffer, int len, PROCESS *p_proc)
     {
         while (len)
         {
-            tty_table[p_proc->tty].print(*buffer);
+            tty_table[p_proc->tty].print(*buffer++);
             len--;
         }
     }
-    else if (syc_code == 2)
+    else if (syc_code == INDEX_SYSCALL_IPC_SEND)
     {
-        if (int(buffer) == SENDING)
-        {
-            send_msg(p_proc, len, p_proc->message);
-        }
-        else
-        {
-            receive_msg(p_proc, len, p_proc->message);
-        }
+        send_msg((PROCESS *)buffer, len, (MESSAGE *)p_proc);
+    }
+    else if (syc_code == INDEX_SYSCALL_IPC_RECEIVE)
+    {
+        receive_msg((PROCESS *)buffer, len, (MESSAGE *)p_proc);
     }
 }

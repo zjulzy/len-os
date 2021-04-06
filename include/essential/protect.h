@@ -80,6 +80,7 @@ typedef struct mess
 {
     int source;
     int type;
+    int value;
     union
     {
         struct OUTPUT_MESSAGE output_message;
@@ -124,7 +125,7 @@ typedef struct s_stackframe
 
 // 进程控制块PCB组成单元
 // 存放了程序运行状态信息,ldt选择子,进程调度信息,进程id,进程名字
-typedef class s_proc
+typedef struct s_proc
 {
 public:
     STACK_FRAME regs;
