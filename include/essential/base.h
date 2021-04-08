@@ -62,6 +62,7 @@ extern "C"
     void i8259_handler(int code);
 
     void kernel_main();
+
 #ifdef __cplusplus
 }
 #endif

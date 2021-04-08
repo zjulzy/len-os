@@ -233,6 +233,8 @@ void process_A()
 }
 void process_B()
 {
+    delay(100);
+    panic("123456");
     while (1)
     {
 
@@ -406,4 +408,9 @@ void unblock(PROCESS *p)
 void block(PROCESS *p, int value)
 {
     p->flags = value;
+}
+void panic(const char *problem)
+{
+    printf(problem);
+    //__asm__ __volatile__("ud2");
 }
