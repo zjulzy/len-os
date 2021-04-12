@@ -244,5 +244,36 @@ typedef struct s_console
     u32 v_mem_limit;
     u32 cursor; /*当前光标位置*/
 } S_CONSOLE;
+// 文件系统相关结构体============================================================
+typedef struct hd_cmd
+{
+    u8 features;
+    u8 count;
+    u8 lba_low;
+    u8 lba_mid;
+    u8 lba_high;
+    u8 device;
+    u8 command;
+} HD_CMD;
+
+struct part_info
+{
+    u32 base; /* # of start sector (NOT byte offset, but SECTOR) */
+    u32 size; /* how many sectors in this partition (NOT byte size, but SECTOR number) */
+};
+
+/* main drive struct, one entry per drive */
+struct hd_info
+{
+    /* int			cylinders; */
+    /* int			heads; */
+    /* int			sectors; */
+    /* int			precomp; */
+    /* int			lzone; */
+    /* int			ctl; */
+    int open_cnt;
+    //struct part_info primary[NR_PRIM_PER_DRIVE];
+    //struct part_info logical[NR_SUB_PER_DRIVE];
+};
 
 #endif

@@ -1,5 +1,6 @@
 #include "interrupt.h"
-
+#include "process.h"
+// 运行在特权级ring0
 //初始化中断相关==============================================================================
 //初始化8259A,操作顺序不可逆转
 //依次向主片和从片中写入ICW1,ICW2,ICW3,ICW4
@@ -58,7 +59,7 @@ void init_clock()
     enable_irq(CLOCK_IRQ);
 }
 //====================================================================================================
-
+// 进程调度---------------------------------------------------------------------
 //在进程队列中寻找没有被阻塞的进程
 PROCESS *find_first(PROCESS *head, PROCESS *tail)
 {
@@ -77,7 +78,6 @@ PROCESS *find_first(PROCESS *head, PROCESS *tail)
     return nullptr;
 }
 
-//中断处理==============================================================================================
 void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head, PROCESS *&next_tail, PROCESS *&curr, PROCESS *&tail, int next_ticks)
 {
     curr->ticks--;
@@ -124,7 +124,7 @@ void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head, P
         }
     }
 }
-
+// 在时钟中断以及阻塞某个进程后会调用的进程调度函数
 void schedule()
 {
     if (PROCESS *p_first = find_first(process_queen1_head, process_queen1_tail); !p_first)
@@ -159,23 +159,32 @@ void schedule()
         next_quene(process_queen1_head, process_queen1_tail, process_queen2_head, process_queen2_tail, p_proc_ready, process_tail, SECOND_QUENE_SLICE);
     }
 }
+// ------------------------------------------------------------------
+
+// 中断处理部分=============================================================================
+// 入口函数
+void interrupt_request(int irq)
+{
+    if (irq == CLOCK_IRQ)
+    {
+        clock_handler();
+    }
+    else if (irq == KEYBOARD_IRQ)
+    {
+        keyboard_handler();
+    }
+    else if (irq == AT_WINI_IRQ)
+    {
+        hd_handler();
+    }
+}
 //时钟中断处理函数
 void clock_handler()
 {
     schedule();
     ticks++;
 }
-void interrupt_request(int irq)
-{
-    if (irq == 0)
-    {
-        clock_handler();
-    }
-    if (irq == 1)
-    {
-        keyboard_handler();
-    }
-}
+
 void keyboard_handler()
 {
     u8 scan_code = in_byte(KB_DATA);
@@ -190,3 +199,24 @@ void keyboard_handler()
         kb_buffer.count++;
     }
 }
+void hd_handler()
+{
+    PROCESS *p = proc_table + PID_HD;
+
+    if ((p->flags & RECEIVING) && /* dest is waiting for the msg */
+        ((p->recv_from_record == INTERRUPT) || (p->recv_from_record == ANY)))
+    {
+        p->message->source = INTERRUPT;
+        p->message->type = INTERRUPT;
+        p->message = 0;
+        p->has_int_msg = 0;
+        p->flags &= ~RECEIVING; /* dest has received the msg */
+        p->recv_from_record = NO_TASK;
+        unblock(p);
+    }
+    else
+    {
+        p->has_int_msg = 1;
+    }
+}
+// ===================================================================================

@@ -115,9 +115,9 @@ sys_call:
 %macro hwint_master 1
     call save 
     ; 屏蔽当前中断
-    ; in al,INT_MASTER_CTLMASK
-    ; or al,(%1<<1)
-    ; out INT_MASTER_CTLMASK,al 
+    in al,INT_MASTER_CTLMASK
+    or al,(%1<<1)
+    out INT_MASTER_CTLMASK,al 
     ; 置EOI
     mov al,EOI 
     out INT_MASTER_CTL,al
@@ -127,9 +127,33 @@ sys_call:
     pop ecx 
     cli 
     ; 重新开启当前中断
-    ; in al,INT_MASTER_CTLMASK
-    ; and al,~(%1<<1)
-    ; out INT_MASTER_CTLMASK,al 
+    in al,INT_MASTER_CTLMASK
+    and al,~(%1<<1)
+    out INT_MASTER_CTLMASK,al 
+    ret
+%endmacro
+; 8259A从片中断调用宏定义
+%macro hwint_slave 1
+    call save 
+    ; 屏蔽当前中断
+    in al,INT_MASTER_CTLMASK
+    or al,(%1<<1)
+    out INT_MASTER_CTLMASK,al 
+    ; 置EOI
+    ; 与主片不同，此处要同时给中片和从片同时置EOI
+    mov al,EOI 
+    out INT_MASTER_CTL,al
+    nop
+    out INT_SLAVE_CTL,al
+    sti 
+    push %1
+    call interrupt_request
+    pop ecx 
+    cli 
+    ; 重新开启当前中断
+    in al,INT_MASTER_CTLMASK
+    and al,~(%1<<1)
+    out INT_MASTER_CTLMASK,al 
     ret
 %endmacro
 ALIGN 16
@@ -199,10 +223,7 @@ hwint13:
     add esp, 2
     hlt
 hwint14:
-    push 14
-    call i8259_handler
-    add esp, 2
-    hlt
+    hwint_slave 14
 hwint15:
     push 15
     call i8259_handler

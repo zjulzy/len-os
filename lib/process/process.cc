@@ -3,6 +3,7 @@
 #include "interrupt.h"
 #include "syscall.h"
 #include "memory.h"
+#include "harddrive.h"
 
 // ----------------------------------------------------------------------------------
 // int init_proc()
@@ -68,12 +69,14 @@ void init_proc()
 {
     TASK user_proc_table[NR_USER_PROCESS] = {
         //{process_proto, STACK_SIZE_PROTO, "process_proto", 0},
-        {process_A, STACK_SIZE_A, "process_A", 2},
-        {process_B, STACK_SIZE_B, "process_B", 3},
-        {process_C, STACK_SIZE_C, "process_C", 4}};
+        {process_A, STACK_SIZE_A, "process_A", 4},
+        {process_B, STACK_SIZE_B, "process_B", 5},
+        {process_C, STACK_SIZE_C, "process_C", 6}};
     TASK task_table[NR_TASK] = {
         {task_tty, STACK_SIZE_TTY, "process_tty", 0},
-        {task_system, STACK_SIZE_SYSTEM, "process_syatem", 1}};
+        {task_system, STACK_SIZE_SYSTEM, "process_syatem", 1},
+        {task_hd, STACK_SIZE_HD, "process_hd", 2},
+        {task_fs, STACK_SIZE_FS, "process_fs,3"}};
     PROCESS *p_process = proc_table;
     TASK *p_task = task_table;
     u16 selector_ldt = SELECTOR_LDT_FIRST;
@@ -99,7 +102,8 @@ void init_proc()
         }
         p_process->pid = p_task->pid;
         p_process->ldt_sel = selector_ldt;
-
+        // 为进程分配终端
+        p_process->tty = 0;
         memcpy(&p_process->ldts[0], &gdt[SELECTOT_KERNEL_C >> 3], sizeof(DESCRIPTOR));
         p_process->ldts[0].attr1 = DAC_E | privilege << 5;
         memcpy(&p_process->ldts[1], &gdt[SELECTOR_KERNEL_RW >> 3], sizeof(DESCRIPTOR));
@@ -137,9 +141,6 @@ void init_proc()
     process_queen1_tail = p_process;
     p_proc_ready = process_queen1_head;
     //为进程指定终端
-    proc_table[2].tty = 0;
-    proc_table[3].tty = 0;
-    proc_table[4].tty = 0;
 }
 //通过task初始化一个pcb,传入pcb地址,初始化pcb结构数据
 //task确定pcb将要插入的优先级队列
@@ -222,34 +223,31 @@ int get_ticks()
     }
     return msg.value;
 }
+// 用户进程
+// 目前用户进程直接退出会报也页错误
 void process_A()
 {
     while (1)
     {
-        char str[8];
-        printf(itoa(str, get_ticks()));
         delay(20);
     }
+    return;
 }
 void process_B()
 {
-    delay(100);
-    panic("123456");
     while (1)
     {
-
-        //disp_str("B");
-        delay(10);
+        delay(20);
     }
+    return;
 }
 void process_C()
 {
     while (1)
     {
-
-        //disp_str("C");
-        delay(10);
+        delay(20);
     }
+    return;
 }
 
 void delay(int time)
@@ -264,6 +262,7 @@ void delay(int time)
         }
     }
 }
+// 以下为系统调用处理，运行在ring0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int ldt_seg_linear(PROCESS *p, int idt)
 {
     DESCRIPTOR *d = &p->ldts[idt];
@@ -291,6 +290,7 @@ int send_msg(PROCESS *src, int dest, MESSAGE *msg)
     }
     if (p_dest->flags & RECEIVING)
     {
+        // 如果目标进程可以接受源进程的信息，将信息复制给目标进程
         if (p_dest->recv_from_record == src->pid or p_dest->recv_from_record == ANY)
         {
             memcpy(vir2line(p_dest, p_dest->message), vir2line(src, msg), sizeof(MESSAGE));
@@ -318,6 +318,7 @@ int send_msg(PROCESS *src, int dest, MESSAGE *msg)
                 p_dest->receive_quene = src;
             }
             src->next_sending = nullptr;
+            // 阻塞进程为等待发送状态，阻塞后要立即进行进程调度
             block(src, SENDING);
             schedule();
         }
@@ -409,8 +410,9 @@ void block(PROCESS *p, int value)
 {
     p->flags = value;
 }
+//报错
 void panic(const char *problem)
 {
     printf(problem);
-    //__asm__ __volatile__("ud2");
+    __asm__ __volatile__("ud2");
 }

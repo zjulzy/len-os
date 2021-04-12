@@ -2,6 +2,7 @@
 ##############################
 # Makefile for len-os                              #
 ##############################
+# makefile中编译的中间文件和内核都会放在build/中
 
 # kernel重新放置后的位置
 # 与/boot/include/loader.inc中保持一致
@@ -42,7 +43,7 @@ OBJS = build/kernel/kernel.o build/kernel/kernel_cpp.o build/essential/base.o bu
 			build/interrupt/interrupt.o build/interrupt/interrupt_asm.o build/essential/proto.o \
 			build/interrupt/syscall.o build/interrupt/syscall_asm.o\
 			build/iosystem/keyboard.o build/process/tty.o build/iosystem/console.o\
-			build/process/process.o build/process/systask.o build/essential/type.o
+			build/process/process.o build/process/systask.o build/essential/type.o build/iosystem/harddrive.o
 KERNEL = build/kernel/kernel.bin
 # 本makefile支持的所有操作
 .PHONY : initialize everything clean buildimg realclean image disasm
@@ -50,6 +51,7 @@ KERNEL = build/kernel/kernel.bin
 
 # =======================================================================================
 # make默认从此开始执行,使用bochs开始加载系统
+# gdb使用调试用的内核，bochs运行的是不带符号表的内核
 initialize : run gdb
 	bochs -f bochsrc
 
@@ -73,13 +75,13 @@ run : $(LENKERNEL) $(LENBOOT)
 	sudo umount /mnt/floppy
 
 
-# 生成boot和loader
+# 生成boot和loader===================================================================
 build/boot/boot.bin: boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc boot/include/boot_include.asm
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<
 build/boot/loader.bin:boot/loader.asm boot/include/loader.inc boot/include/pm.inc boot/include/loader_include.asm
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<
 
-# 生成内核
+# 生成内核=======================================================================
 build/kernel/kernel.o : kernel/kernel.asm kernel/kernel.inc kernel/const.inc
 	$(ASM)  $(KERNEL_ASM_FLAG) -o $@ $< 
 
@@ -89,10 +91,11 @@ build/kernel/kernel_cpp.o : kernel/kernel.cc
 $(KERNEL):$(OBJS)
 	$(LD)  $(LD_FLAGS) -o $@ $^
 
+# 生成供调试的内核，含有符号表
 gdb : $(OBJS)
 	$(LD)  $(LD_GDB_FLAGS) -o $(LENKERNELGDB) $^
 
-# 生成中间文件
+# 生成中间文件----------------------------------------------------------------
 
 build/essential/global.o :lib/essential/global.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
@@ -112,17 +115,22 @@ build/interrupt/interrupt.o:lib/interrupt/interrupt.cc
 
 build/essential/proto.o : lib/essential/proto.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
+
 build/process/process.o : lib/process/process.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
 build/interrupt/interrupt_asm.o: lib/interrupt/interrupt.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
+
 build/interrupt/syscall.o : lib/interrupt/syscall.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
+
 build/interrupt/syscall_asm.o : lib/interrupt/syscall.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
+
 build/iosystem/keyboard.o : lib/iosystem/keyboard.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
+
 build/process/tty.o:lib/process/tty.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
@@ -131,5 +139,10 @@ build/iosystem/console.o : lib/iosystem/console.cc
 
 build/process/systask.o:lib/process/systask.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
+
 build/essential/type.o :lib/essential/type.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
+
+build/iosystem/harddrive.o:lib/iosystem/harddrive.cc
+	$(GCC) $(C_FLAGS) -o $@ $<
+

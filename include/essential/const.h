@@ -55,7 +55,7 @@
 //每个进程允许使用的ldt数目
 #define LDT_SIZE 2
 //定义任务以及用户进程数目
-#define NR_TASK 2
+#define NR_TASK 4
 #define NR_USER_PROCESS 3
 //===========================================================
 //GDT相关
@@ -269,7 +269,7 @@
 #define ANY -1
 #define NO_TASK -2
 #define INTERRUPT -3
-#define MSG_TYPE_INT 1
+
 // 系统调用
 #define INDEX_SYSCALL_GET_TICKS 0
 #define INDEX_SYSCALL_WRITE 1
@@ -278,4 +278,13 @@
 // pid
 #define PID_TTY 0
 #define PID_SYSTEM 1
+#define PID_HD 2
+#define PID_FS 3
+// 信息类型
+#define MSG_TYPE_DEV_OPEN 1001
+#define MSG_TYPE_GET_TICKS 0
+#define MSG_TYPE_INT 1
+
+// 磁盘
+#define SECTOR_SIZE 512
 #endif

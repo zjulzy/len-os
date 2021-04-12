@@ -19,6 +19,7 @@ extern "C"
     void init_keyboard();
     void clock_handler();
     void keyboard_handler();
+    void hd_handler();
 #ifdef __cplusplus
 }
 #endif
