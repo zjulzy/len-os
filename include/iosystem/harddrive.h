@@ -151,7 +151,11 @@ extern "C"
     void hd_cmd_out(HD_CMD *cmd);
     void task_hd();
     void task_fs();
-    int hd_info();
+    int hd_sectors();
+    void hd_open();
+    void hd_close();
+    void hd_write(MESSAGE *msg);
+    void hd_read(MESSAGE *msg);
 #ifdef __cplusplus
 }
 #endif

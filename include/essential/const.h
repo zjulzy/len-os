@@ -281,10 +281,27 @@
 #define PID_HD 2
 #define PID_FS 3
 // 信息类型
-#define MSG_TYPE_DEV_OPEN 1001
+#define MSG_TYPE_HD 2
+#define MSG_TYPE_FS 3
 #define MSG_TYPE_GET_TICKS 0
 #define MSG_TYPE_INT 1
-
+// 系统调用信息操作
+#define FUNTION_DEV_OPEN 1001
+#define FUNTION_DEV_WRITE 1002
+#define FUNTION_DEV_READ 1003
+#define FUNTION_DEV_CLOSE 1004
 // 磁盘
 #define SECTOR_SIZE 512
+
+// 主通道最多有两个驱动
+#define MAX_DRIVES 2
+#define NR_PART_PER_DRIVE 4
+#define NR_SUB_PER_PART 16
+#define NR_SUB_PER_DRIVE (NR_SUB_PER_PART * NR_PART_PER_DRIVE)
+#define NR_PRIM_PER_DRIVE (NR_PART_PER_DRIVE + 1)
+// 占用的最大设备号
+#define MAX_PRIM (MAX_DRIVES * NR_PRIM_PER_DRIVE - 1)
+#define MAX_SUBPARTITIONS (NR_SUB_PER_DRIVE * MAX_DRIVES)
+// 逻辑分区的第一个设备号
+#define logic_start (MAX_PRIM + 1)
 #endif

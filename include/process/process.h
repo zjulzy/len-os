@@ -25,6 +25,7 @@ extern "C"
     int send_msg(PROCESS *src, int dest, MESSAGE *msg);
     int receive_msg(PROCESS *dest, int src, MESSAGE *msg);
     void panic(const char *problem);
+    void *vir2line(PROCESS *p, void *va);
 #ifdef __cplusplus
 }
 #endif
