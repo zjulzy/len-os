@@ -43,7 +43,7 @@ OBJS = build/kernel/kernel.o build/kernel/kernel_cpp.o build/essential/base.o bu
 			build/interrupt/interrupt.o build/interrupt/interrupt_asm.o build/essential/proto.o \
 			build/interrupt/syscall.o build/interrupt/syscall_asm.o\
 			build/iosystem/keyboard.o build/process/tty.o build/iosystem/console.o\
-			build/process/process.o build/process/systask.o build/essential/type.o build/iosystem/harddrive.o
+			build/process/process.o build/process/systask.o build/essential/type.o build/iosystem/harddrive.o build/filesystem/fs.o
 KERNEL = build/kernel/kernel.bin
 # 本makefile支持的所有操作
 .PHONY : initialize everything clean buildimg realclean image disasm
@@ -144,5 +144,8 @@ build/essential/type.o :lib/essential/type.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
 build/iosystem/harddrive.o:lib/iosystem/harddrive.cc
+	$(GCC) $(C_FLAGS) -o $@ $<
+
+build/filesystem/fs.o:lib/filesystem/fs.cc:
 	$(GCC) $(C_FLAGS) -o $@ $<
 

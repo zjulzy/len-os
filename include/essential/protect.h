@@ -276,4 +276,91 @@ struct hd_info
     //struct part_info logical[NR_SUB_PER_DRIVE];
 };
 
+// 文件系统相关数据结构
+// 超级块，位于分区的第二个块
+struct super_block
+{
+    u32 s_inodes_count;      //文件系统中inode的总数
+    u32 s_blocks_count;      //文件系统中块的总数
+    u32 s_r_blocks_count;    //保留块的总数
+    u32 s_free_blocks_count; //未使用的块的总数,包含保留块
+    u32 s_free_inodes_count; //未使用的inode的总数
+    u32 s_first_data_block;
+    u32 s_log_block_size;   //1024左移，计算块的大小
+    u32 s_log_frag_size;    //1024左移或者右移，计算段的大小
+    u32 s_blocks_per_group; //每个块组中块的个数
+    u32 s_frags_per_group;  //每个块组中段的个数
+    u32 s_inodes_per_group; //每个块组中的inode的总数
+    u32 s_mtime;
+    u32 s_wtime;
+    u16 s_mnt_count;
+    u16 s_max_mnt_count;
+    u16 s_magic; //文件系统标志
+    u16 s_state; //文件系统的状态
+    u16 s_errors;
+    u16 s_minor_rev_level;
+    u32 s_lastcheck;
+    u32 s_checkinterval;
+    u32 s_creator_os;
+    u32 s_rev_level;
+    u16 s_def_resuid;
+    u16 s_def_resgid;
+    // 仅用于使用动态inode大小的修订版（EXT2_DYNAMIC_REV）
+    u32 s_first_ino;
+    u16 s_inode_size;
+    u16 s_block_group_nr;
+    u32 s_feature_compat;
+    u32 s_feature_incompat;
+    u32 s_feature_ro_compat;
+    u8 s_uuid[16];
+    char s_volume_name[16];
+    char s_last_mounted[64];
+    u32 s_algorithm_usage_bitmap;
+    u8 s_prealloc_blocks;
+    u8 s_prealloc_dir_blocks;
+    u16 s_padding;
+    u32 s_reserved[204];
+};
+// 组描述符
+struct group_descriptor
+{
+    u32 bg_block_bitmap;      //块位图所在的第一个块的块id
+    u32 bg_inode_bitmap;      //inode位图所在的第一个块的块id
+    u32 bg_inode_table;       //inode表所在的第一个块的块id
+    u16 bg_free_blocks_count; //块组中未使用的块数
+    u16 bg_free_inodes_count; // 块组中未使用的inode数
+    u16 bg_used_dirs_count;   // 块组分配的目录的inode数
+    u16 bg_pad;
+    u32 bg_reserved[3];
+};
+//文件目录入口项
+typedef struct directory_entry
+{
+    u32 inode;    //文件入口的inode号，0表示该项未使用
+    u16 rec_len;  //目录项长度
+    u8 name_len;  //文件名包含的字符数
+    u8 file_type; //文件类型
+    char name;    // 文件名
+} DIR_ENTRY;
+struct inode
+{
+    u16 i_mode; //文件格式和访问权限
+    u16 i_uid;  //文件所有者id后16位
+    u32 i_size; //文件字节数
+    u32 i_atime;
+    u32 i_ctime;
+    u32 i_mtime;
+    u32 i_dtime;
+    u16 i_gid;
+    u16 i_links_count;
+    u32 i_blocks;
+    u32 i_flags;
+    u32 osd1;
+    u32 i_block[15];
+    u32 i_generation;
+    u32 i_file_acl;
+    u32 i_dir_acl;
+    u32 i_faddr;
+    u32 osd2[3];
+};
 #endif

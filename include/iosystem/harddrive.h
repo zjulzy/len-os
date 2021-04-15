@@ -150,7 +150,6 @@ extern "C"
 #define MAKE_DEVICE_REG(lba, drv, lba_highest) ((lba << 6) | (drv << 4) | (lba_highest & 0xF) | 0xA0)
     void hd_cmd_out(HD_CMD *cmd);
     void task_hd();
-    void task_fs();
     int hd_sectors();
     void hd_open();
     void hd_close();
