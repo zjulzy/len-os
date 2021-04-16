@@ -51,6 +51,14 @@ extern "C"
     // extern PROCESS *process_blocked_tail;
     extern KB_INPUT kb_buffer;
     extern int current_console;
+
+    extern int group_num;
+    extern super_block fs_super_block;
+    extern group_descriptor fs_group_descriptors[];
+    extern u8 block_bitmap[][1024];
+    extern u8 inode_bitmap[][1024];
+    extern inode root_dictionary;
+    extern inode *fs_inode_table;
 #ifdef __cplusplus
 }
 #endif

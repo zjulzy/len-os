@@ -3,6 +3,7 @@
 #include "interrupt.h"
 #include "syscall.h"
 #include "memory.h"
+#include "fs.h"
 #include "harddrive.h"
 
 // ----------------------------------------------------------------------------------

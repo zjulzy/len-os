@@ -292,6 +292,8 @@
 #define FUNTION_DEV_CLOSE 1004
 // 磁盘
 #define SECTOR_SIZE 512
+#define BLOCK_SIZE 1024
+#define INODE_SIZE 0x80
 
 // 主通道最多有两个驱动
 #define MAX_DRIVES 2

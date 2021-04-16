@@ -34,3 +34,14 @@ PROCESS *process_tail = proc_table;
 KB_INPUT kb_buffer;
 // 当前显示终端
 int current_console;
+// 文件系统相关全局变量
+// block group的数量需要读取超级块之后获取
+// 超级块，gdt，两个位图都占一个块
+int group_num;
+super_block fs_super_block;
+group_descriptor fs_group_descriptors[32];
+u8 block_bitmap[32][1024];
+u8 inode_bitmap[32][1024];
+inode root_dictionary;
+// inode table存放在6mb~10mb处
+inode *fs_inode_table = (struct inode *)0x600000;

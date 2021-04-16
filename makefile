@@ -18,7 +18,7 @@ DASM = ndisasm
 GCC = g++
 LD = ld
 INCLUDE_PATH = -I include/essential/ -I include/interrupt/  \
- -I include/iosystem/   -I include/process/
+ -I include/iosystem/   -I include/process/ -I include/filesystem/
 
 # boot和kernel汇编flag
 BOOT_ASM_FLAG = -I boot/include
@@ -146,6 +146,6 @@ build/essential/type.o :lib/essential/type.cc
 build/iosystem/harddrive.o:lib/iosystem/harddrive.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
-build/filesystem/fs.o:lib/filesystem/fs.cc:
+build/filesystem/fs.o:lib/filesystem/fs.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
