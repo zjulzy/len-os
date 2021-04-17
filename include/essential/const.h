@@ -2,7 +2,7 @@
 #ifndef LENOS_CONST_H
 #define LENOS_CONST_H
 
-//idt相关宏定义=========================================
+// idt相关宏定义=========================================
 //系统调用中断向量
 #define INT_VECTOR_SYS_CALL 0X90
 //异常中断向量
@@ -22,15 +22,15 @@
 #define INT_VECTOR_PROTECTION 0xD
 #define INT_VECTOR_PAGE_FAULT 0xE
 #define INT_VECTOR_COPROC_ERR 0x10
-//8259A芯片端口定义
+// 8259A芯片端口定义
 #define INT_M_CTL 0x20
 #define INT_M_CTLMASK 0x21
 #define INT_S_CTL 0xA0
 #define INT_S_CTLMASK 0xA1
-//8259A中断入口
+// 8259A中断入口
 #define INT_VECTOR_IRQ0 0x20
 #define INT_VECTOR_IRQ8 0x28
-//8253相关定义
+// 8253相关定义
 #define TIMER0 0x40
 #define TIMER_MODE 0x43
 #define RATE_GENERATOR 0x34
@@ -40,7 +40,7 @@
 #define PRIVILEGE_KRNL 0
 #define PRIVILEGE_TASK 1
 #define PRIVILEGE_USER 3
-//RPL
+// RPL
 #define RPL_KRNL SA_RPL0
 #define RPL_TASK SA_RPL1
 #define RPL_USER SA_RPL3
@@ -58,7 +58,7 @@
 #define NR_TASK 4
 #define NR_USER_PROCESS 3
 //===========================================================
-//GDT相关
+// GDT相关
 //描述符索引,用于在c文件中确定选择子对应的描述符数组下标
 //部分由loader确定
 #define INDEX_DUMMY 0
@@ -143,12 +143,14 @@
 //键盘相关io宏定义=============================================================================
 /* AT keyboard */
 /* 8042 ports */
-#define KB_DATA 0x60 /* I/O port for keyboard data \
-             Read : Read Output Buffer             \
-             Write: Write Input Buffer(8042 Data&8048 Command) */
-#define KB_CMD 0x64  /* I/O port for keyboard command \
-             Read : Read Status Register              \
-             Write: Write Input Buffer(8042 Command) */
+#define KB_DATA                      \
+  0x60 /* I/O port for keyboard data \
+Read : Read Output Buffer            \
+Write: Write Input Buffer(8042 Data&8048 Command) */
+#define KB_CMD                          \
+  0x64 /* I/O port for keyboard command \
+Read : Read Status Register             \
+Write: Write Input Buffer(8042 Command) */
 
 #define KB_IN_BYTES 32     /* size of keyboard input buffer */
 #define MAP_COLS 3         /* Number of columns in keymap */
@@ -164,9 +166,10 @@
 #define FLAG_ALT_R 0x4000   /* Alternate key		*/
 #define FLAG_PAD 0x8000     /* keys in num pad		*/
 
-#define MASK_RAW 0x01FF /* raw key value = code passed to tty & MASK_RAW \
-               the value can be found either in the keymap column 0      \
-               or in the list below */
+#define MASK_RAW                                          \
+  0x01FF /* raw key value = code passed to tty & MASK_RAW \
+the value can be found either in the keymap column 0      \
+or in the list below */
 
 /* Special keys */
 #define ESC (0x01 + FLAG_EXT)       /* Esc		*/
