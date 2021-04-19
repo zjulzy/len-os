@@ -14,7 +14,8 @@ typedef void (*int_handler)();
 // key_type = 1  ==> 特殊信息
 typedef char key_type;
 typedef char key_value;
-char *itoa(char *str, int num);
+char* itoa(char* str, int num);
+bool strcmp(char* str1, char* str2);
 #ifdef __cplusplus
 }
 #endif

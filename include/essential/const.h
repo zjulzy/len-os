@@ -1,10 +1,12 @@
 //宏定义
 #ifndef LENOS_CONST_H
 #define LENOS_CONST_H
+#define min(x, y) (x > y ? y : x)
 
 // idt相关宏定义=========================================
 //系统调用中断向量
 #define INT_VECTOR_SYS_CALL 0X90
+
 //异常中断向量
 #define INT_VECTOR_DIVIDE 0x0
 #define INT_VECTOR_DEBUG 0x1
@@ -22,24 +24,29 @@
 #define INT_VECTOR_PROTECTION 0xD
 #define INT_VECTOR_PAGE_FAULT 0xE
 #define INT_VECTOR_COPROC_ERR 0x10
+
 // 8259A芯片端口定义
 #define INT_M_CTL 0x20
 #define INT_M_CTLMASK 0x21
 #define INT_S_CTL 0xA0
 #define INT_S_CTLMASK 0xA1
+
 // 8259A中断入口
 #define INT_VECTOR_IRQ0 0x20
 #define INT_VECTOR_IRQ8 0x28
+
 // 8253相关定义
 #define TIMER0 0x40
 #define TIMER_MODE 0x43
 #define RATE_GENERATOR 0x34
 #define TIMER_FREQ 1193182L
 #define HZ 100
+
 //权限
 #define PRIVILEGE_KRNL 0
 #define PRIVILEGE_TASK 1
 #define PRIVILEGE_USER 3
+
 // RPL
 #define RPL_KRNL SA_RPL0
 #define RPL_TASK SA_RPL1
@@ -52,11 +59,13 @@
 // GDT 和 IDT 中描述符的个数
 #define GDT_SIZE 128
 #define IDT_SIZE 256
+
 //每个进程允许使用的ldt数目
 #define LDT_SIZE 2
+
 //定义任务以及用户进程数目
 #define NR_TASK 4
-#define NR_USER_PROCESS 3
+#define NR_USER_PROCESS 1
 //===========================================================
 // GDT相关
 //描述符索引,用于在c文件中确定选择子对应的描述符数组下标
@@ -67,6 +76,7 @@
 #define INDEX_VIDEO 3
 #define INDEX_TSS 4
 #define INDEX_LDT_FIRST 5
+
 //选择子
 #define SELECTOR_DUMMY 0
 #define SELECTOR_FLAT_C 0x08
@@ -81,6 +91,7 @@
 
 /* 每个任务有一个单独的 LDT, 每个 LDT 中的描述符个数: */
 #define LDT_SIZE 2
+
 /* descriptor indices in LDT */
 #define INDEX_LDT_C 0
 #define INDEX_LDT_RW 1
@@ -133,24 +144,28 @@
 #define FIRST_QUENE_SLICE 2
 #define SECOND_QUENE_SLICE 4
 #define LAST_QUENE_SLICE 8
+
 // tty最大数量.
 #define NR_CONSOLE 3
+
 // tty最大输入长度
 #define TTY_IN_BYTES 256
 
+// tty中文件目录最大长度
+#define SIZE_OF_TTY_DIR 2048
 #define SCREEN_SIZE (80 * 25)
 #define SCREEN_WIDTH 80
 //键盘相关io宏定义=============================================================================
 /* AT keyboard */
 /* 8042 ports */
-#define KB_DATA                      \
-  0x60 /* I/O port for keyboard data \
-Read : Read Output Buffer            \
-Write: Write Input Buffer(8042 Data&8048 Command) */
-#define KB_CMD                          \
-  0x64 /* I/O port for keyboard command \
-Read : Read Status Register             \
-Write: Write Input Buffer(8042 Command) */
+#define KB_DATA                        \
+    0x60 /* I/O port for keyboard data \
+  Read : Read Output Buffer            \
+  Write: Write Input Buffer(8042 Data&8048 Command) */
+#define KB_CMD                            \
+    0x64 /* I/O port for keyboard command \
+  Read : Read Status Register             \
+  Write: Write Input Buffer(8042 Command) */
 
 #define KB_IN_BYTES 32     /* size of keyboard input buffer */
 #define MAP_COLS 3         /* Number of columns in keymap */
@@ -166,10 +181,10 @@ Write: Write Input Buffer(8042 Command) */
 #define FLAG_ALT_R 0x4000   /* Alternate key		*/
 #define FLAG_PAD 0x8000     /* keys in num pad		*/
 
-#define MASK_RAW                                          \
-  0x01FF /* raw key value = code passed to tty & MASK_RAW \
-the value can be found either in the keymap column 0      \
-or in the list below */
+#define MASK_RAW                                            \
+    0x01FF /* raw key value = code passed to tty & MASK_RAW \
+  the value can be found either in the keymap column 0      \
+  or in the list below */
 
 /* Special keys */
 #define ESC (0x01 + FLAG_EXT)       /* Esc		*/
@@ -278,21 +293,29 @@ or in the list below */
 #define INDEX_SYSCALL_WRITE 1
 #define INDEX_SYSCALL_IPC_SEND 2
 #define INDEX_SYSCALL_IPC_RECEIVE 3
+
 // pid
 #define PID_TTY 0
 #define PID_SYSTEM 1
 #define PID_HD 2
 #define PID_FS 3
+
 // 信息类型
 #define MSG_TYPE_HD 2
 #define MSG_TYPE_FS 3
 #define MSG_TYPE_GET_TICKS 0
 #define MSG_TYPE_INT 1
+
 // 系统调用信息操作
-#define FUNTION_DEV_OPEN 1001
-#define FUNTION_DEV_WRITE 1002
-#define FUNTION_DEV_READ 1003
-#define FUNTION_DEV_CLOSE 1004
+#define FUNTION_DEV_OPEN 1
+#define FUNTION_DEV_WRITE 2
+#define FUNTION_DEV_READ 3
+#define FUNTION_DEV_CLOSE 4
+#define FUNTION_FS_ROOT 5
+#define FUNTION_FS_READ 6
+#define FUNTION_FS_CD 7
+#define FUNTION_FS_WRITE 8
+
 // 磁盘
 #define SECTOR_SIZE 512
 #define BLOCK_SIZE 1024
@@ -304,9 +327,34 @@ or in the list below */
 #define NR_SUB_PER_PART 16
 #define NR_SUB_PER_DRIVE (NR_SUB_PER_PART * NR_PART_PER_DRIVE)
 #define NR_PRIM_PER_DRIVE (NR_PART_PER_DRIVE + 1)
+
 // 占用的最大设备号
 #define MAX_PRIM (MAX_DRIVES * NR_PRIM_PER_DRIVE - 1)
 #define MAX_SUBPARTITIONS (NR_SUB_PER_DRIVE * MAX_DRIVES)
+
 // 逻辑分区的第一个设备号
 #define logic_start (MAX_PRIM + 1)
+
+// 文件类型
+enum FILE_TYPE {
+
+    EXT2_FT_UNKNOWN, /*未知*/
+
+    EXT2_FT_REG_FILE, /*常规文件*/
+
+    EXT2_FT_DIR, /*目录文件*/
+
+    EXT2_FT_CHRDEV, /*字符设备文件*/
+
+    EXT2_FT_BLKDEV, /*块设备文件*/
+
+    EXT2_FT_FIFO, /*命名管道文件*/
+
+    EXT2_FT_SOCK, /*套接字文件*/
+
+    EXT2_FT_SYMLINK, /*符号连文件*/
+
+    EXT2_FT_MAX /*文件类型的最大个数*/
+
+};
 #endif

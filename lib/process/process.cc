@@ -69,78 +69,79 @@
 // }
 
 void init_proc() {
-  TASK user_proc_table[NR_USER_PROCESS] = {
-      //{process_proto, STACK_SIZE_PROTO, "process_proto", 0},
-      {process_A, STACK_SIZE_A, "process_A", 4},
-      {process_B, STACK_SIZE_B, "process_B", 5},
-      {process_C, STACK_SIZE_C, "process_C", 6}};
-  TASK task_table[NR_TASK] = {
-      {task_tty, STACK_SIZE_TTY, "process_tty", 0},
-      {task_system, STACK_SIZE_SYSTEM, "process_syatem", 1},
-      {task_hd, STACK_SIZE_HD, "process_hd", 2},
-      {task_fs, STACK_SIZE_FS, "process_fs,3"}};
-  PROCESS *p_process = proc_table;
-  TASK *p_task = task_table;
-  u16 selector_ldt = SELECTOR_LDT_FIRST;
-  u32 remain_stack_size = STACK_SIZE_TOTAL;
-  int eflags;
-  u8 privilege, rpl;
-  //分别对用户进程和任务进程分配PCB
-  for (int i = 0; i < NR_TASK + NR_USER_PROCESS; i++) {
-    if (i < NR_TASK) {
-      p_task = task_table + i;
-      privilege = PRIVILEGE_TASK;
-      rpl = RPL_TASK;
-      eflags = 0x1202;
-    } else {
-      p_task = user_proc_table + i - NR_TASK;
-      privilege = PRIVILEGE_USER;
-      rpl = RPL_USER;
-      eflags = 0x202;  //无IO权限
+    TASK user_proc_table[NR_USER_PROCESS] = {
+        //{process_proto, STACK_SIZE_PROTO, "process_proto", 0},
+        {process_A, STACK_SIZE_A, "process_A", 4},
+        //{process_B, STACK_SIZE_B, "process_B", 5},
+        //{process_C, STACK_SIZE_C, "process_C", 6}
+    };
+    TASK task_table[NR_TASK] = {
+        {task_tty, STACK_SIZE_TTY, "process_tty", 0},
+        {task_system, STACK_SIZE_SYSTEM, "process_syatem", 1},
+        {task_hd, STACK_SIZE_HD, "process_hd", 2},
+        {task_fs, STACK_SIZE_FS, "process_fs,3"}};
+    PROCESS *p_process = proc_table;
+    TASK *p_task = task_table;
+    u16 selector_ldt = SELECTOR_LDT_FIRST;
+    u32 remain_stack_size = STACK_SIZE_TOTAL;
+    int eflags;
+    u8 privilege, rpl;
+    //分别对用户进程和任务进程分配PCB
+    for (int i = 0; i < NR_TASK + NR_USER_PROCESS; i++) {
+        if (i < NR_TASK) {
+            p_task = task_table + i;
+            privilege = PRIVILEGE_TASK;
+            rpl = RPL_TASK;
+            eflags = 0x1202;
+        } else {
+            p_task = user_proc_table + i - NR_TASK;
+            privilege = PRIVILEGE_USER;
+            rpl = RPL_USER;
+            eflags = 0x202;  //无IO权限
+        }
+        p_process->pid = p_task->pid;
+        p_process->ldt_sel = selector_ldt;
+        // 为进程分配终端
+        p_process->tty = 0;
+        memcpy(&p_process->ldts[0], &gdt[SELECTOT_KERNEL_C >> 3],
+               sizeof(DESCRIPTOR));
+        p_process->ldts[0].attr1 = DAC_E | privilege << 5;
+        memcpy(&p_process->ldts[1], &gdt[SELECTOR_KERNEL_RW >> 3],
+               sizeof(DESCRIPTOR));
+        p_process->ldts[1].attr1 = DAD_RW | privilege << 5;
+
+        p_process->regs.cs = (0 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
+        p_process->regs.ds = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
+        p_process->regs.es = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
+        p_process->regs.fs = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
+        p_process->regs.ss = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
+        p_process->regs.gs = (SELECTOR_KERNEL_GS & SA_RPL_MASK) | rpl;
+        p_process->regs.eip = (u32)(p_task->initial_eip);
+        p_process->regs.esp = (u32)task_stack + remain_stack_size;
+        p_process->regs.eflags = eflags;  // IF=1, IOPL=1, bit 2 is always 1.+
+        p_process->flags = RUNNING;
+        p_process->message = 0;
+        p_process->receive_quene = p_process->next_sending = nullptr;
+        p_process++;
+        p_task++;
+        selector_ldt += 1 << 3;
+        remain_stack_size -= p_task->stacksize;
     }
-    p_process->pid = p_task->pid;
-    p_process->ldt_sel = selector_ldt;
-    // 为进程分配终端
-    p_process->tty = 0;
-    memcpy(&p_process->ldts[0], &gdt[SELECTOT_KERNEL_C >> 3],
-           sizeof(DESCRIPTOR));
-    p_process->ldts[0].attr1 = DAC_E | privilege << 5;
-    memcpy(&p_process->ldts[1], &gdt[SELECTOR_KERNEL_RW >> 3],
-           sizeof(DESCRIPTOR));
-    p_process->ldts[1].attr1 = DAD_RW | privilege << 5;
 
-    p_process->regs.cs = (0 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
-    p_process->regs.ds = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
-    p_process->regs.es = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
-    p_process->regs.fs = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
-    p_process->regs.ss = (8 & SA_RPL_MASK & SA_TI_MASK) | SA_TIL | rpl;
-    p_process->regs.gs = (SELECTOR_KERNEL_GS & SA_RPL_MASK) | rpl;
-    p_process->regs.eip = (u32)(p_task->initial_eip);
-    p_process->regs.esp = (u32)task_stack + remain_stack_size;
-    p_process->regs.eflags = eflags;  // IF=1, IOPL=1, bit 2 is always 1.+
-    p_process->flags = RUNNING;
-    p_process->message = 0;
-    p_process->receive_quene = p_process->next_sending = nullptr;
-    p_process++;
-    p_task++;
-    selector_ldt += 1 << 3;
-    remain_stack_size -= p_task->stacksize;
-  }
-
-  p_process = proc_table;
-  p_process->next_pcb = p_process;
-  p_process->ticks = LAST_QUENE_SLICE;
-  process_tail = proc_table;
-  process_queen1_head = p_process + 1;
-  for (int i = 1; i < NR_TASK + NR_USER_PROCESS; i++) {
-    p_process++;
-    p_process->ticks = FIRST_QUENE_SLICE;
-    p_process->next_pcb =
-        i == NR_TASK + NR_USER_PROCESS - 1 ? process_tail : p_process + 1;
-  }
-  process_queen1_tail = p_process;
-  p_proc_ready = process_queen1_head;
-  //为进程指定终端
+    p_process = proc_table;
+    p_process->next_pcb = p_process;
+    p_process->ticks = LAST_QUENE_SLICE;
+    process_tail = proc_table;
+    process_queen1_head = p_process + 1;
+    for (int i = 1; i < NR_TASK + NR_USER_PROCESS; i++) {
+        p_process++;
+        p_process->ticks = FIRST_QUENE_SLICE;
+        p_process->next_pcb =
+            i == NR_TASK + NR_USER_PROCESS - 1 ? process_tail : p_process + 1;
+    }
+    process_queen1_tail = p_process;
+    p_proc_ready = process_queen1_head;
+    //为进程指定终端
 }
 //通过task初始化一个pcb,传入pcb地址,初始化pcb结构数据
 // task确定pcb将要插入的优先级队列
@@ -189,16 +190,16 @@ void init_proc() {
 // }
 
 bool is_deadlock(PROCESS *src, PROCESS *dest) {
-  while (1) {
-    if (dest->flags & SENDING) {
-      if (dest->send_to_record == src - proc_table) {
-        return true;
-      }
-    } else {
-      break;
+    while (1) {
+        if (dest->flags & SENDING) {
+            if (dest->send_to_record == src - proc_table) {
+                return true;
+            }
+        } else {
+            break;
+        }
     }
-  }
-  return false;
+    return false;
 }
 
 // void process_proto()
@@ -210,52 +211,52 @@ bool is_deadlock(PROCESS *src, PROCESS *dest) {
 //     }
 // }
 int get_ticks() {
-  MESSAGE msg;
-  memset(&msg, 0, sizeof(MESSAGE));
-  msg.type = INDEX_SYSCALL_GET_TICKS;
-  if (ipc(INDEX_SYSCALL_IPC_SEND, PID_SYSTEM, &msg) == 0) {
-    ipc(INDEX_SYSCALL_IPC_RECEIVE, PID_SYSTEM, &msg);
-  }
-  return msg.value;
+    MESSAGE msg;
+    memset(&msg, 0, sizeof(MESSAGE));
+    msg.type = INDEX_SYSCALL_GET_TICKS;
+    if (ipc(INDEX_SYSCALL_IPC_SEND, PID_SYSTEM, &msg) == 0) {
+        ipc(INDEX_SYSCALL_IPC_RECEIVE, PID_SYSTEM, &msg);
+    }
+    return msg.value;
 }
 // 用户进程
 // 目前用户进程直接退出会报也页错误
 void process_A() {
-  while (1) {
-    delay(20);
-  }
-  return;
+    while (1) {
+        delay(20);
+    }
+    return;
 }
 void process_B() {
-  while (1) {
-    delay(20);
-  }
-  return;
+    while (1) {
+        delay(20);
+    }
+    return;
 }
 void process_C() {
-  while (1) {
-    delay(20);
-  }
-  return;
+    while (1) {
+        delay(20);
+    }
+    return;
 }
 
 void delay(int time) {
-  for (int i = 0; i < time; i++) {
-    for (int j = 0; j < 100; j++) {
-      for (int k = 0; k < 1000; k++) {
-      }
+    for (int i = 0; i < time; i++) {
+        for (int j = 0; j < 100; j++) {
+            for (int k = 0; k < 1000; k++) {
+            }
+        }
     }
-  }
 }
 // 以下为系统调用处理，运行在ring0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int ldt_seg_linear(PROCESS *p, int idt) {
-  DESCRIPTOR *d = &p->ldts[idt];
-  return d->base_high << 24 | d->base_mid << 16 | d->base_low;
+    DESCRIPTOR *d = &p->ldts[idt];
+    return d->base_high << 24 | d->base_mid << 16 | d->base_low;
 }
 void *vir2line(PROCESS *p, void *va) {
-  u32 seg_base = ldt_seg_linear(p, INDEX_LDT_RW);
-  u32 la = seg_base + (u32)va;
-  return (void *)la;
+    u32 seg_base = ldt_seg_linear(p, INDEX_LDT_RW);
+    u32 la = seg_base + (u32)va;
+    return (void *)la;
 }
 // ipc系统调用发送信息
 // 主要步骤为：
@@ -264,41 +265,41 @@ void *vir2line(PROCESS *p, void *va) {
 // 3.如果正在等待本进程的消息，将消息复制给目标进程的空白消息体，目标进程解除阻塞
 // 4.如果目标进程没有在等待本进程的消息，本进程被阻塞并且加入目标进程的发送队列
 int send_msg(PROCESS *src, int dest, MESSAGE *msg) {
-  PROCESS *p_dest = proc_table + dest;
-  msg->source = src - proc_table;
-  if (is_deadlock(src, p_dest)) {
-    // TODO:panic
-  }
-  if (p_dest->flags & RECEIVING) {
-    // 如果目标进程可以接受源进程的信息，将信息复制给目标进程
-    if (p_dest->recv_from_record == src->pid or
-        p_dest->recv_from_record == ANY) {
-      memcpy(vir2line(p_dest, p_dest->message), vir2line(src, msg),
-             sizeof(MESSAGE));
-      p_dest->message = 0;
-      p_dest->flags = RUNNING;
-      p_dest->recv_from_record = NO_TASK;
-      unblock(p_dest);
-    } else {
-      //目标进程没有等待
-      src->send_to_record = dest;
-      //设置待发送消息体指针，便于接受进程寻找消息体
-      src->message = msg;
-      if (auto p = p_dest->receive_quene; p) {
-        while (p->next_sending) {
-          p = p->next_sending;
-        }
-        p->next_sending = src;
-      } else {
-        p_dest->receive_quene = src;
-      }
-      src->next_sending = nullptr;
-      // 阻塞进程为等待发送状态，阻塞后要立即进行进程调度
-      block(src, SENDING);
-      schedule();
+    PROCESS *p_dest = proc_table + dest;
+    msg->source = src - proc_table;
+    if (is_deadlock(src, p_dest)) {
+        // TODO:panic
     }
-  }
-  return 0;
+    if (p_dest->flags & RECEIVING) {
+        // 如果目标进程可以接受源进程的信息，将信息复制给目标进程
+        if (p_dest->recv_from_record == src->pid or
+            p_dest->recv_from_record == ANY) {
+            memcpy(vir2line(p_dest, p_dest->message), vir2line(src, msg),
+                   sizeof(MESSAGE));
+            p_dest->message = 0;
+            p_dest->flags = RUNNING;
+            p_dest->recv_from_record = NO_TASK;
+            unblock(p_dest);
+        } else {
+            //目标进程没有等待
+            src->send_to_record = dest;
+            //设置待发送消息体指针，便于接受进程寻找消息体
+            src->message = msg;
+            if (auto p = p_dest->receive_quene; p) {
+                while (p->next_sending) {
+                    p = p->next_sending;
+                }
+                p->next_sending = src;
+            } else {
+                p_dest->receive_quene = src;
+            }
+            src->next_sending = nullptr;
+            // 阻塞进程为等待发送状态，阻塞后要立即进行进程调度
+            block(src, SENDING);
+            schedule();
+        }
+    }
+    return 0;
 }
 
 // ipc系统调用接受信息
@@ -308,69 +309,77 @@ int send_msg(PROCESS *src, int dest, MESSAGE *msg) {
 // 3.若本进程的发送队列中有进程符合本进程接受信息需求，将其信息复制给本进程的空白信息体
 // 4.如果没有合适的进程，本进程进入阻塞状态
 int receive_msg(PROCESS *dest, int src, MESSAGE *msg) {
-  PROCESS *p_src = nullptr;
-  if (dest->has_int_msg and (src == ANY or src == INTERRUPT)) {
-    dest->message->source = INTERRUPT;
-    dest->message->type = MSG_TYPE_INT;
-    dest->has_int_msg = 0;
-    return 0;
-  }
-  if (src == ANY) {
-    if (auto p_send = dest->receive_quene; p_send) {
-      dest->receive_quene = p_send->next_sending;
-      p_send->next_sending = nullptr;
-      memcpy(vir2line(dest, msg), vir2line(p_send, p_send->message),
-             sizeof(MESSAGE));
-      p_send->message = 0;
-      p_send->send_to_record = NO_TASK;
-      unblock(p_send);
-    } else {
-      dest->message = msg;
-      dest->recv_from_record = ANY;
-      block(dest, RECEIVING);
-      schedule();
+    PROCESS *p_src = nullptr;
+    if (dest->has_int_msg and (src == ANY or src == INTERRUPT)) {
+        dest->message->source = INTERRUPT;
+        dest->message->type = MSG_TYPE_INT;
+        dest->has_int_msg = 0;
+        return 0;
     }
-  } else if ((&proc_table[src])->flags == SENDING and
-             (&proc_table[src])->send_to_record == dest->pid) {
-    auto p_send = dest->receive_quene;
-    PROCESS *p_prev = nullptr;
-    while (p_send->pid != src) {
-      p_prev = p_send;
-      p_send = p_send->next_sending;
-      if (!p_send) {
+    if (src == ANY) {
+        if (auto p_send = dest->receive_quene; p_send) {
+            dest->receive_quene = p_send->next_sending;
+            p_send->next_sending = nullptr;
+            memcpy(vir2line(dest, msg), vir2line(p_send, p_send->message),
+                   sizeof(MESSAGE));
+            p_send->message = 0;
+            p_send->send_to_record = NO_TASK;
+            unblock(p_send);
+        } else {
+            dest->message = msg;
+            dest->recv_from_record = ANY;
+            block(dest, RECEIVING);
+            schedule();
+        }
+    } else if (src == INTERRUPT) {
+        dest->message = msg;
         dest->recv_from_record = src;
         block(dest, RECEIVING);
-        return 0;
-      }
-    }
-    memcpy(vir2line(dest, msg), vir2line(p_send, p_send->message),
-           sizeof(MESSAGE));
-    p_send->message = 0;
-    p_send->send_to_record = NO_TASK;
-    unblock(p_send);
-    if (p_prev) {
-      p_prev = p_send->next_sending;
-    } else {
-      dest->receive_quene = p_send->next_sending;
-    }
+        schedule();
+    } else if ((&proc_table[src])->flags == SENDING and
+               (&proc_table[src])->send_to_record == dest->pid) {
+        auto p_send = dest->receive_quene;
+        PROCESS *p_prev = nullptr;
+        while (p_send->pid != src) {
+            p_prev = p_send;
+            p_send = p_send->next_sending;
+            if (!p_send) {
+                dest->recv_from_record = src;
+                block(dest, RECEIVING);
+                return 0;
+            }
+        }
+        memcpy(vir2line(dest, msg), vir2line(p_send, p_send->message),
+               sizeof(MESSAGE));
+        p_send->message = 0;
+        p_send->send_to_record = NO_TASK;
+        unblock(p_send);
+        if (p_prev) {
+            p_prev = p_send->next_sending;
+        } else {
+            dest->receive_quene = p_send->next_sending;
+        }
 
-    p_send->next_sending = nullptr;
-  } else {
-    dest->message = msg;
-    dest->recv_from_record = src;
-    block(dest, RECEIVING);
-    schedule();
-  }
-  return 0;
+        p_send->next_sending = nullptr;
+    } else {
+        dest->message = msg;
+        dest->recv_from_record = src;
+        block(dest, RECEIVING);
+        schedule();
+    }
+    return 0;
 }
 
 void unblock(PROCESS *p) {
-  p->flags = RUNNING;
-  return;
+    p->flags = RUNNING;
+    return;
 }
+
+// 根据输入值阻塞进程
 void block(PROCESS *p, int value) { p->flags = value; }
+
 //报错
 void panic(const char *problem) {
-  printf(problem);
-  __asm__ __volatile__("ud2");
+    printf(problem);
+    __asm__ __volatile__("ud2");
 }

@@ -62,8 +62,10 @@ realclean :
 # 删除中间文件
 clean:
 	rm -f $(OBJS)
+
 # 生成引导文件和内核文件
 everything : $(LENBOOT) $(LENKERNEL)
+
 # 生成镜像文件
 image : everything realclean buildimg
 
@@ -78,6 +80,7 @@ run : $(LENKERNEL) $(LENBOOT)
 # 生成boot和loader===================================================================
 build/boot/boot.bin: boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc boot/include/boot_include.asm
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<
+
 build/boot/loader.bin:boot/loader.asm boot/include/loader.inc boot/include/pm.inc boot/include/loader_include.asm
 	$(ASM) $(BOOT_ASM_FLAG) -o $@ $<
 
