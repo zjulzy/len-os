@@ -12,6 +12,7 @@ void process_proto();
 void process_A();
 void process_B();
 void process_C();
+void empty_process();
 void task_system();
 void delay(int time);
 void task_tty();

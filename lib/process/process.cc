@@ -71,7 +71,7 @@
 void init_proc() {
     TASK user_proc_table[NR_USER_PROCESS] = {
         //{process_proto, STACK_SIZE_PROTO, "process_proto", 0},
-        {process_A, STACK_SIZE_A, "process_A", 4},
+        {empty_process, 0, "process_tail", 4},
         //{process_B, STACK_SIZE_B, "process_B", 5},
         //{process_C, STACK_SIZE_C, "process_C", 6}
     };
@@ -79,7 +79,7 @@ void init_proc() {
         {task_tty, STACK_SIZE_TTY, "process_tty", 0},
         {task_system, STACK_SIZE_SYSTEM, "process_syatem", 1},
         {task_hd, STACK_SIZE_HD, "process_hd", 2},
-        {task_fs, STACK_SIZE_FS, "process_fs,3"}};
+        {task_fs, STACK_SIZE_FS, "process_fs", 3}};
     PROCESS *p_process = proc_table;
     TASK *p_task = task_table;
     u16 selector_ldt = SELECTOR_LDT_FIRST;
@@ -129,19 +129,25 @@ void init_proc() {
     }
 
     p_process = proc_table;
-    p_process->next_pcb = p_process;
+    process_tail = proc_table + NR_TASK + NR_USER_PROCESS - 1;
+    process_tail->next_pcb = process_tail;
     p_process->ticks = LAST_QUENE_SLICE;
-    process_tail = proc_table;
-    process_queen1_head = p_process + 1;
+
+    process_queen1_head = p_process;
     for (int i = 1; i < NR_TASK + NR_USER_PROCESS; i++) {
-        p_process++;
         p_process->ticks = FIRST_QUENE_SLICE;
         p_process->next_pcb =
             i == NR_TASK + NR_USER_PROCESS - 1 ? process_tail : p_process + 1;
+        p_process++;
+        p_process->queen_number = 1;
     }
-    process_queen1_tail = p_process;
+    process_queen2_tail = process_queen3_tail = process_tail;
+    process_queen2_head = process_queen3_head = process_tail;
+    process_queen1_head = proc_table;
+    process_queen1_tail = process_tail - 1;
+    process_tail->ticks = LAST_QUENE_SLICE;
     p_proc_ready = process_queen1_head;
-    //为进程指定终端
+    process_tail->queen_number = 3;
 }
 //通过task初始化一个pcb,传入pcb地址,初始化pcb结构数据
 // task确定pcb将要插入的优先级队列
@@ -238,6 +244,12 @@ void process_C() {
         delay(20);
     }
     return;
+}
+
+// 空进程，用于系统空转
+void empty_process() {
+    while (1) {
+    }
 }
 
 void delay(int time) {

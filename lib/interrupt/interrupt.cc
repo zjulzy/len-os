@@ -77,6 +77,7 @@ void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head,
                 int next_ticks) {
     curr->ticks--;
     if (curr->ticks == 0) {
+        curr->queen_number++;
         curr->ticks = next_ticks;
         if (curr_head == curr)
             curr_head = curr->next_pcb;
@@ -117,14 +118,23 @@ void schedule() {
                 find_first(process_queen2_head, process_queen2_tail);
             !p_second) {
             p_proc_ready->ticks--;
-            if (p_proc_ready->ticks == 0 or p_proc_ready->flags != RUNNING) {
+            if (p_proc_ready->ticks == 0 or
+                p_proc_ready->flags != RUNNING and
+                    p_proc_ready->queen_number == 3) {
                 p_proc_ready->ticks = LAST_QUENE_SLICE;
-
+                // TODO:这里有问题
                 if (p_proc_ready == process_tail) {
-                    p_proc_ready = process_queen3_head;
+                    PROCESS *p = process_queen3_head;
+
+                    while (p->flags != RUNNING) {
+                        p = p->next_pcb;
+                    }
+                    p_proc_ready = p;
                 } else {
                     p_proc_ready = p_proc_ready->next_pcb;
                 }
+            } else if (p_proc_ready->queen_number < 3) {
+                p_proc_ready = find_first(process_queen3_head, process_tail);
             }
         } else {
             p_proc_ready = p_second;

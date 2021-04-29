@@ -115,7 +115,6 @@ typedef struct s_stackframe {
 // 进程控制块PCB组成单元
 // 存放了程序运行状态信息,ldt选择子,进程调度信息,进程id,进程名字
 typedef struct s_proc {
-   public:
     STACK_FRAME regs;
 
     //虽然下面接着就是局部描述符表,但是这个ldt_sel依然有存在的意义
@@ -130,6 +129,7 @@ typedef struct s_proc {
     int tty;
     u32 pid;
     char p_name[16];
+    u8 queen_number;
 
     // 进程调度队列内部指针,暂定为双向
     struct s_proc *pre_pcb;
@@ -159,8 +159,7 @@ typedef struct s_proc {
     // 用于产生链表结构的指针
     // 一个进程只能在一个接受队列中，因此使用指针用来表示接受队列中下一个进程
     s_proc *next_sending;
-    int send_msg(int dest);
-    int receive_msg(int src);
+
 } PROCESS;
 
 // 这个结构体用来定义系统初始进程
