@@ -20,8 +20,8 @@ void TTY::init(int index) {
     clear_command();
     memset(prefix, '\0', 256);
     prefix[0] = '0' + index;
-    print('0' + index);
-    print('>');
+    print('0' + index, true);
+    print('>', true);
 }
 //将键盘输入读入到缓存区
 void TTY::tty_do_read() { keyboard_read(&tty_buffer); }
@@ -42,15 +42,15 @@ void TTY::tty_do_write() {
         } else if (out == '\b') {
             curr--;
             command[curr] = '\0';
-            print(out);
+            print(out, true);
         } else {
             command[curr] = out;
             curr++;
-            print(out);
+            print(out, true);
         }
     }
 }
-void TTY::print(char out) {
+void TTY::print(char out, bool isPrefix = true) {
     //获取当前光标的显存位置
     u8 *p_vmem = (u8 *)(V_MEM_BASE + console_buffer.cursor);
 
@@ -67,11 +67,13 @@ void TTY::print(char out) {
                         ((console_buffer.cursor - console_buffer.v_mem_addr) /
                              SCREEN_WIDTH / 2 +
                          1);
-                char *p;
-                for (p = prefix; *p; p++) {
-                    print(*p);
+                if (isPrefix) {
+                    char *p;
+                    for (p = prefix; *p; p++) {
+                        print(*p, false);
+                    }
+                    print('>', false);
                 }
-                print('>');
             }
             break;
         case '\b':
@@ -107,11 +109,11 @@ void TTY::tty_command() {
         ipc(INDEX_SYSCALL_IPC_SEND, PID_FS, &msg);
         ipc(INDEX_SYSCALL_IPC_RECEIVE, PID_FS, &msg);
         if (msg.u.fs_message.result == 0) {
-            char str[] = "root/>";
+            char str[] = "root/";
             memcpy(prefix, str, sizeof(str));
             curr = 2;
         }
-        print('\n');
+        print('\n', true);
 
     }
     // 判断是否为cd命令--------------------------------------------------------------
@@ -130,6 +132,7 @@ void TTY::tty_command() {
 
             // 在面包屑导航中加一级
             post_dir(dir_name);
+            print('\n', true);
         }
     }
     // 判断是否为open命令------------------------------------------------------------
@@ -144,23 +147,26 @@ void TTY::tty_command() {
     // 判断是否为ls命令--------------------------------------------------------------
     else if (command[0] == 'l' and command[1] == 's') {
         char *buffer = dictionary_buffer;
+
+        // 换行并且不显示前缀
+        print('\n', false);
         while (buffer < dictionary_buffer + SIZE_OF_TTY_DIR) {
             directory_entry *curr_entry = (directory_entry *)buffer;
             if (curr_entry->rec_len == 0) break;
             char *out = curr_entry->name;
             while (*out) {
-                print(*out);
+                print(*out, false);
                 out++;
             }
-            print(' ');
+            print(' ', false);
 
             // ext2中目录项有长度各不相同，目录项在删除时会被前一个目录项覆盖
             // 因此在遍历时要使用char*指针配合rec_len使用
             buffer += curr_entry->rec_len;
         }
-        print('\n');
+        print('\n', true);
     } else {
-        print('\n');
+        print('\n', true);
     }
 }
 

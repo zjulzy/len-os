@@ -25,7 +25,7 @@ class TTY {
     void init(int index);
     void tty_do_read();
     void tty_do_write();
-    void print(char out);
+    void print(char out, bool isPrefix);
     void tty_command();
     void clear_command();
     int search_file(char* file_name, FILE_TYPE f);

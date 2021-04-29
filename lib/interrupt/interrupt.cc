@@ -62,20 +62,19 @@ void init_clock() {
 //在进程队列中寻找没有被阻塞的进程
 PROCESS *find_first(PROCESS *head, PROCESS *tail) {
     PROCESS *p = head;
-    if (tail == process_tail) return nullptr;
+    // if (tail == process_tail) return nullptr;
 
     while (p != tail) {
         if (p->flags == RUNNING) return p;
         p = p->next_pcb;
     }
     if (tail->flags == RUNNING) return p;
-    return nullptr;
+    return process_tail;
 }
 
 void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head,
                 PROCESS *&next_tail, PROCESS *&curr, PROCESS *&tail,
                 int next_ticks) {
-    curr->ticks--;
     if (curr->ticks == 0) {
         curr->queen_number++;
         curr->ticks = next_ticks;
@@ -109,18 +108,19 @@ void next_quene(PROCESS *&curr_head, PROCESS *&curr_tail, PROCESS *&next_head,
             // curr = curr_head;
         }
     }
+    curr->ticks--;
 }
 // 在时钟中断以及阻塞某个进程后会调用的进程调度函数
 void schedule() {
     if (PROCESS *p_first = find_first(process_queen1_head, process_queen1_tail);
-        !p_first) {
+        p_first == process_tail) {
         if (PROCESS *p_second =
                 find_first(process_queen2_head, process_queen2_tail);
-            !p_second) {
-            p_proc_ready->ticks--;
-            if (p_proc_ready->ticks == 0 or
-                p_proc_ready->flags != RUNNING and
-                    p_proc_ready->queen_number == 3) {
+            p_second == process_tail) {
+            // 第三级队列内部调度
+
+            if ((p_proc_ready->ticks == 0 or p_proc_ready->flags != RUNNING) and
+                p_proc_ready->queen_number == 3) {
                 p_proc_ready->ticks = LAST_QUENE_SLICE;
                 // TODO:这里有问题
                 if (p_proc_ready == process_tail) {
@@ -131,18 +131,24 @@ void schedule() {
                     }
                     p_proc_ready = p;
                 } else {
+                    while (p_proc_ready->next_pcb->flags != RUNNING) {
+                        p_proc_ready = p_proc_ready->next_pcb;
+                    }
                     p_proc_ready = p_proc_ready->next_pcb;
                 }
             } else if (p_proc_ready->queen_number < 3) {
                 p_proc_ready = find_first(process_queen3_head, process_tail);
             }
+            p_proc_ready->ticks--;
         } else {
+            //第二级队列内部调度
             p_proc_ready = p_second;
             next_quene(process_queen2_head, process_queen2_tail,
                        process_queen3_head, process_queen3_tail, p_proc_ready,
                        process_tail, LAST_QUENE_SLICE);
         }
     } else {
+        //第一级内部队列调度
         p_proc_ready = p_first;
         next_quene(process_queen1_head, process_queen1_tail,
                    process_queen2_head, process_queen2_tail, p_proc_ready,

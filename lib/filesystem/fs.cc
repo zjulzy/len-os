@@ -43,7 +43,8 @@ void task_fs() {
 int fs_read_file(MESSAGE *msg) {
     inode curr;
     memcpy((void *)&curr,
-           (void *)fs_inode_table + msg->u.fs_message.inode_index, INODE_SIZE);
+           (void *)(fs_inode_table + msg->u.fs_message.inode_index - 1),
+           INODE_SIZE);
     // 判断读取字节数是否大于文件大小
     // if (curr.i_size < msg->u.fs_message.count) {
     //     return 1;
@@ -128,6 +129,6 @@ int fs_op_disk(int sector_head, char *buffer, int bytes, u8 funtion) {
 //根据inode序号获取inode
 int fs_get_inode(int index, inode *target) {
     if (index >= fs_super_block.s_inodes_count) return 1;
-    memcpy((void *)target, (void *)&fs_inode_table[index], INODE_SIZE);
+    memcpy((void *)target, (void *)&fs_inode_table[index - 1], INODE_SIZE);
     return 0;
 }

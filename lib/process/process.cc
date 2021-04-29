@@ -138,8 +138,8 @@ void init_proc() {
         p_process->ticks = FIRST_QUENE_SLICE;
         p_process->next_pcb =
             i == NR_TASK + NR_USER_PROCESS - 1 ? process_tail : p_process + 1;
-        p_process++;
         p_process->queen_number = 1;
+        p_process++;
     }
     process_queen2_tail = process_queen3_tail = process_tail;
     process_queen2_head = process_queen3_head = process_tail;
