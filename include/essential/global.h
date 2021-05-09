@@ -8,9 +8,11 @@
 #define STACK_SIZE_SYSTEM 0x8000
 #define STACK_SIZE_HD 0x8000
 #define STACK_SIZE_FS 0x8000
-#define STACK_SIZE_TOTAL                                          \
-  STACK_SIZE_PROTO + STACK_SIZE_A + STACK_SIZE_B + STACK_SIZE_C + \
-      STACK_SIZE_TTY + STACK_SIZE_SYSTEM + STACK_SIZE_HD + STACK_SIZE_FS
+#define STACK_SIZE_MEM 0x8000
+#define STACK_SIZE_TOTAL                                                     \
+    STACK_SIZE_PROTO + STACK_SIZE_A + STACK_SIZE_B + STACK_SIZE_C +          \
+        STACK_SIZE_TTY + STACK_SIZE_SYSTEM + STACK_SIZE_HD + STACK_SIZE_FS + \
+        STACK_SIZE_MEM
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -71,7 +71,7 @@
 void init_proc() {
     TASK user_proc_table[NR_USER_PROCESS] = {
         //{process_proto, STACK_SIZE_PROTO, "process_proto", 0},
-        {empty_process, 0, "process_tail", 4},
+        {empty_process, 0, "process_tail", 5},
         //{process_B, STACK_SIZE_B, "process_B", 5},
         //{process_C, STACK_SIZE_C, "process_C", 6}
     };
@@ -79,7 +79,8 @@ void init_proc() {
         {task_tty, STACK_SIZE_TTY, "process_tty", 0},
         {task_system, STACK_SIZE_SYSTEM, "process_syatem", 1},
         {task_hd, STACK_SIZE_HD, "process_hd", 2},
-        {task_fs, STACK_SIZE_FS, "process_fs", 3}};
+        {task_fs, STACK_SIZE_FS, "process_fs", 3},
+        {task_mem, STACK_SIZE_MEM, "process_mem", 4}};
     PROCESS *p_process = proc_table;
     TASK *p_task = task_table;
     u16 selector_ldt = SELECTOR_LDT_FIRST;
@@ -87,17 +88,20 @@ void init_proc() {
     int eflags;
     u8 privilege, rpl;
     //分别对用户进程和任务进程分配PCB
-    for (int i = 0; i < NR_TASK + NR_USER_PROCESS; i++) {
+    for (int i = 0; i < NR_TASK + NR_PROCESS; i++) {
         if (i < NR_TASK) {
             p_task = task_table + i;
             privilege = PRIVILEGE_TASK;
             rpl = RPL_TASK;
             eflags = 0x1202;
-        } else {
+        } else if (i < NR_TASK + NR_USER_PROCESS) {
             p_task = user_proc_table + i - NR_TASK;
             privilege = PRIVILEGE_USER;
             rpl = RPL_USER;
             eflags = 0x202;  //无IO权限
+        } else {
+            proc_table[i].flags = FREE;
+            continue;
         }
         p_process->pid = p_task->pid;
         p_process->ldt_sel = selector_ldt;

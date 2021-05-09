@@ -160,6 +160,8 @@ typedef struct s_proc {
     // 一个进程只能在一个接受队列中，因此使用指针用来表示接受队列中下一个进程
     s_proc *next_sending;
 
+    // 记录父进程pid
+    int p_parent;
 } PROCESS;
 
 // 这个结构体用来定义系统初始进程

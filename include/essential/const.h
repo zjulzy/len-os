@@ -1,8 +1,11 @@
 //宏定义
 #ifndef LENOS_CONST_H
 #define LENOS_CONST_H
+
 #define min(x, y) (x > y ? y : x)
 
+#define reassembly(high, high_shift, mid, mid_shift, low) \
+    (((high) << (high_shift)) + ((mid) << (mid_shift)) + (low))
 // idt相关宏定义=========================================
 //系统调用中断向量
 #define INT_VECTOR_SYS_CALL 0X90
@@ -64,8 +67,10 @@
 #define LDT_SIZE 2
 
 //定义任务以及用户进程数目
-#define NR_TASK 4
+#define NR_TASK 5
 #define NR_USER_PROCESS 1
+// 系统预留的pcb个数
+#define NR_PROCESS 32
 //===========================================================
 // GDT相关
 //描述符索引,用于在c文件中确定选择子对应的描述符数组下标
@@ -100,6 +105,13 @@
 #define vir2phy(seg_base, vir) (u32)(((u32)seg_base) + (u32)vir)
 
 // 系统段描述符类型值说明
+#define DA_32 0x4000       /* 32 位段				*/
+#define DA_LIMIT_4K 0x8000 /* 段界限粒度为 4K 字节			*/
+#define LIMIT_4K_SHIFT 12
+#define DA_DPL0 0x00     /* DPL = 0				*/
+#define DA_DPL1 0x20     /* DPL = 1				*/
+#define DA_DPL2 0x40     /* DPL = 2				*/
+#define DA_DPL3 0x60     /* DPL = 3				*/
 #define DA_LDT 0x82      /* 局部描述符表段类型值			*/
 #define DA_TaskGate 0x85 /* 任务门类型值   */
 #define DA_386TSS 0x89   /* 可用 386 任务状态段类型值		*/
@@ -281,12 +293,11 @@
 #define V_MEM_BASE 0xB8000
 #define V_MEM_SIZE 0x8000
 //=====================================================================================
+//进程状态标志位
 #define RUNNING 0
 #define SENDING 0x2
 #define RECEIVING 0x4
-#define ANY -1
-#define NO_TASK -2
-#define INTERRUPT -3
+#define FREE 0x8
 
 // 系统调用
 #define INDEX_SYSCALL_GET_TICKS 0
@@ -299,12 +310,18 @@
 #define PID_SYSTEM 1
 #define PID_HD 2
 #define PID_FS 3
+#define PID_MEM 4
+#define ANY -1
+#define NO_TASK -2
+#define INTERRUPT -3
 
 // 信息类型
+#define MSG_TYPE_MEM 4
 #define MSG_TYPE_HD 2
 #define MSG_TYPE_FS 3
 #define MSG_TYPE_GET_TICKS 0
 #define MSG_TYPE_INT 1
+#define MSG_TYPE_SYSCALL_RET 5
 
 // 系统调用信息操作
 #define FUNTION_DEV_OPEN 1
@@ -315,6 +332,7 @@
 #define FUNTION_FS_READ 6
 #define FUNTION_FS_CD 7
 #define FUNTION_FS_WRITE 8
+#define FUNTION_FORK 9
 
 // 磁盘
 #define SECTOR_SIZE 512
@@ -327,6 +345,8 @@
 #define NR_SUB_PER_PART 16
 #define NR_SUB_PER_DRIVE (NR_SUB_PER_PART * NR_PART_PER_DRIVE)
 #define NR_PRIM_PER_DRIVE (NR_PART_PER_DRIVE + 1)
+
+#define NR_FILE 3
 
 // 占用的最大设备号
 #define MAX_PRIM (MAX_DRIVES * NR_PRIM_PER_DRIVE - 1)
@@ -357,4 +377,9 @@ enum FILE_TYPE {
     EXT2_FT_MAX /*文件类型的最大个数*/
 
 };
+
+// 新fork进程准备的内存空间
+#define PROCS_BASE 0xA00000              /* 10 MB */
+#define PROC_IMAGE_SIZE_DEFAULT 0x100000 /*  1 MB */
+#define PROC_ORIGIN_STACK 0x400          /*  1 KB */
 #endif

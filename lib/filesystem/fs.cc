@@ -7,6 +7,7 @@
 #include "memory.h"
 #include "process.h"
 #include "syscall.h"
+
 // 文件系统任务
 void task_fs() {
     init_fs();
@@ -27,6 +28,9 @@ void task_fs() {
                 result = fs_read_file(&msg);
                 break;
             case FUNTION_DEV_WRITE:
+                break;
+            case FUNTION_FORK:
+                result = fs_fork(&msg);
                 break;
             default:
                 break;
@@ -130,5 +134,10 @@ int fs_op_disk(int sector_head, char *buffer, int bytes, u8 funtion) {
 int fs_get_inode(int index, inode *target) {
     if (index >= fs_super_block.s_inodes_count) return 1;
     memcpy((void *)target, (void *)&fs_inode_table[index - 1], INODE_SIZE);
+    return 0;
+}
+
+int fs_fork(MESSAGE *m) {
+    PROCESS *child = &proc_table[m->u.fs_message.pid];
     return 0;
 }
