@@ -9,11 +9,25 @@
 void task_mem() {
     init_memory_manager();
     MESSAGE msg;
+
+    // 表示源进程是否存在，是否需要返回信息
+    bool source_exsit = true;
     while (1) {
+        source_exsit = true;
         ipc(INDEX_SYSCALL_IPC_RECEIVE, ANY, &msg);
+        int source = msg.source;
         switch (msg.u.mem_message.function) {
+            case FUNTION_FORK:
+                int pid = do_fork(source);
+                msg.u.mem_message.pid = pid;
+            case FUNTION_EXIT:
+                source_exsit = false;
+                do_exit(source, msg.u.mem_message.status);
             default:
                 break;
+        }
+        if (source_exsit) {
+            ipc(INDEX_SYSCALL_IPC_SEND, source, &msg);
         }
     }
 }
@@ -101,3 +115,27 @@ int alloc_mem(int pid, int mem_size) {
     return PROCS_BASE +
            (pid - NR_TASK - NR_USER_PROCESS) * PROC_IMAGE_SIZE_DEFAULT;
 }
+
+// do_exit()根据输入的状态码终止进程，并且清空相关数据结构
+// 在当前架构直接改变进程块flag为未分配即可达到清空内存空间的效果
+void do_exit(int pid, int status) {
+    int father_pid = proc_table[pid].p_parent;
+    PROCESS* curr = &proc_table[pid];
+    curr->exit_status = status;
+
+    // 如果父进程在wait，直接退出
+    if (proc_table[father_pid].flags & WAITING) {
+        proc_table[father_pid].flags = RUNNING;
+        MESSAGE m;
+        m.type = MSG_TYPE_SYSCALL_RET;
+        m.u.mem_message.pid = pid;
+        m.u.mem_message.status = status;
+        ipc(INDEX_SYSCALL_IPC_SEND, father_pid, &m);
+        curr->flags = FREE;
+    } else {
+        curr->flags |= HANGING;
+    }
+    //如果该子进程还有子进程，全部free
+}
+
+void do_wait() {}

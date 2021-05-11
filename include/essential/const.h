@@ -298,6 +298,8 @@
 #define SENDING 0x2
 #define RECEIVING 0x4
 #define FREE 0x8
+#define WAITING 0x16
+#define HANGING 0x32
 
 // 系统调用
 #define INDEX_SYSCALL_GET_TICKS 0
@@ -333,6 +335,8 @@
 #define FUNTION_FS_CD 7
 #define FUNTION_FS_WRITE 8
 #define FUNTION_FORK 9
+#define FUNTION_EXIT 10
+#define FUNTION_EXEC 11
 
 // 磁盘
 #define SECTOR_SIZE 512

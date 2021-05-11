@@ -14,6 +14,8 @@ void task_mem();
 int init_memory_manager();
 int do_fork();
 int alloc_mem(int pid, int mem_size);
+void do_exit(int pid, int status);
+void do_wait();
 
 #ifdef __cplusplus
 }

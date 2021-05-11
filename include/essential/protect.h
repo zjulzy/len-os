@@ -64,6 +64,7 @@ struct MEM_MESSAGE {
     u8 function;         // 执行的操作类型
     u32 pid;             // 信息来源进程
     struct inode *file;  // 目标文件
+    int status;          //进程退出状态
     // 创建子进程: -1: 创建失败  0~MAX_PRO_NUM : 子进程pid
     int result;  //返回值结果
 };
@@ -162,6 +163,9 @@ typedef struct s_proc {
 
     // 记录父进程pid
     int p_parent;
+
+    //记录退出状态
+    int exit_status;
 } PROCESS;
 
 // 这个结构体用来定义系统初始进程
