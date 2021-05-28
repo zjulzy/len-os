@@ -62,6 +62,7 @@ extern u8 block_bitmap[][1024];
 extern u8 inode_bitmap[][1024];
 extern inode root_dictionary;
 extern inode *fs_inode_table;
+extern char *mm_buffer;
 #ifdef __cplusplus
 }
 #endif

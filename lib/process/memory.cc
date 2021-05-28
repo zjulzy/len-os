@@ -26,6 +26,8 @@ void task_mem() {
             case FUNTION_WAIT:
                 source_exsit = false;
                 do_wait(source);
+            case FUNTION_EXEC:
+                msg.u.mem_message.result = do_exec(&msg);
             default:
                 break;
         }
@@ -171,4 +173,19 @@ void do_wait(int pid) {
 }
 
 // 为新fork的子进程实现exec，替换执行代码
-void do_exec() {}
+// 具体执行步骤为：
+// 1. 从信息体中取得文件inode指针，并转化到当前地址空间
+// 2. 将文件读取到内存管理进程的缓存区，再将其根据elf结构放入指定进程地址空间
+// 3. 为进程的寄存器赋值，包括参数赋值
+// 4. 更改进程名字和进程调度相关配置
+int do_exec(MESSAGE* msg) {
+    int source = msg->source;
+    inode* elf_file =
+        (inode*)vir2line(proc_table + source, msg->u.mem_message.file);
+
+    // 从文件系统中读取代码文件
+    MESSAGE fs_msg;
+    msg->type = MSG_TYPE_FS;
+    msg->u.fs_message.function = FUNTION_FS_READ;
+    msg->u.fs_message.buffer = mm_buffer;
+}

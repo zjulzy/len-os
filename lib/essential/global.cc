@@ -46,3 +46,6 @@ u8 inode_bitmap[32][1024];
 inode root_dictionary;
 // inode table存放在6mb~10mb处
 inode *fs_inode_table = (struct inode *)0x600000;
+
+// 内存管理器读取文件的缓存，大小为5MB
+char *mm_buffer = (char *)0xA00000;

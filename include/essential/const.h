@@ -384,7 +384,8 @@ enum FILE_TYPE {
 };
 
 // 新fork进程准备的内存空间
-#define PROCS_BASE 0xA00000              /* 10 MB */
+#define PROCS_BASE 0xF00000              /* 15 MB */
 #define PROC_IMAGE_SIZE_DEFAULT 0x100000 /*  1 MB */
 #define PROC_ORIGIN_STACK 0x400          /*  1 KB */
+
 #endif

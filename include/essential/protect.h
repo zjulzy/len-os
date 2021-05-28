@@ -61,13 +61,14 @@ struct FS_MESSAGE {
     char *file_name;  // 文件名字
 };
 struct MEM_MESSAGE {
-    u8 function;         // 执行的操作类型
-    u32 pid;             // 信息来源进程
-    struct inode *file;  // 目标文件
-    int status;          //进程退出状态
+    u8 function;      // 执行的操作类型
+    u32 pid;          // 信息来源进程
+    int inode_index;  // 目标文件inode索引
+    int status;       //进程退出状态
     // 创建子进程: -1: 创建失败  0~MAX_PRO_NUM : 子进程pid
-    int result;        //返回值结果
-    char *arg_buffer;  //输入参数栈指针
+    int result;             //返回值结果
+    char *arg_buffer;       //输入参数栈指针
+    int arg_buffer_length;  //参数栈的长度
 };
 
 typedef struct mess {
