@@ -337,6 +337,7 @@
 #define FUNTION_FORK 9
 #define FUNTION_EXIT 10
 #define FUNTION_EXEC 11
+#define FUNTION_WAIT 12
 
 // 磁盘
 #define SECTOR_SIZE 512

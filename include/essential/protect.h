@@ -66,7 +66,8 @@ struct MEM_MESSAGE {
     struct inode *file;  // 目标文件
     int status;          //进程退出状态
     // 创建子进程: -1: 创建失败  0~MAX_PRO_NUM : 子进程pid
-    int result;  //返回值结果
+    int result;        //返回值结果
+    char *arg_buffer;  //输入参数栈指针
 };
 
 typedef struct mess {

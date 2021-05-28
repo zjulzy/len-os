@@ -23,6 +23,9 @@ void task_mem() {
             case FUNTION_EXIT:
                 source_exsit = false;
                 do_exit(source, msg.u.mem_message.status);
+            case FUNTION_WAIT:
+                source_exsit = false;
+                do_wait(source);
             default:
                 break;
         }
@@ -138,4 +141,34 @@ void do_exit(int pid, int status) {
     //如果该子进程还有子进程，全部free
 }
 
-void do_wait() {}
+// 处理wait请求
+void do_wait(int pid) {
+    bool is_wait = false;
+    for (int i = 0; i < NR_TASK + NR_PROCESS; i++) {
+        if (proc_table[i].p_parent == pid) {
+            if (proc_table[i].flags & HANGING) {
+                // 给父进程发消息解除阻塞，释放子进程
+                proc_table[i].flags = FREE;
+                MESSAGE m;
+                m.source = i;
+                m.type = MSG_TYPE_MEM;
+                ipc(INDEX_SYSCALL_IPC_SEND, pid, &m);
+                break;
+            } else {
+                is_wait = true;
+            }
+        }
+    }
+    if (is_wait) {
+        proc_table[pid].flags = WAITING;
+    } else {
+        // 没有子进程的情况，直接解除父进程的阻塞
+        MESSAGE m;
+        m.source = NO_TASK;
+        m.type = MSG_TYPE_MEM;
+        ipc(INDEX_SYSCALL_IPC_SEND, pid, &m);
+    }
+}
+
+// 为新fork的子进程实现exec，替换执行代码
+void do_exec() {}

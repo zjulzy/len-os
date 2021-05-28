@@ -30,6 +30,9 @@ void *vir2line(PROCESS *p, void *va);
 
 // fork.cc
 int fork();
+
+// exec.cc
+int exec(const char *path, char *arg[]);
 #ifdef __cplusplus
 }
 #endif

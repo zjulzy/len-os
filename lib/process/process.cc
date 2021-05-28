@@ -69,6 +69,7 @@
 // }
 
 void init_proc() {
+    // 初始化的进程分为系统进程和用户进程两类，用户进程可以在开机后添加
     TASK user_proc_table[NR_USER_PROCESS] = {
         //{process_proto, STACK_SIZE_PROTO, "process_proto", 0},
         {empty_process, 0, "process_tail", 5},

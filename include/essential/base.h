@@ -18,6 +18,7 @@ void init_descriptor(DESCRIPTOR *p_desc, u32 base, u32 limit, u16 attribute);
 void init_idt_description(unsigned char vector, u8 desc_type,
                           int_handler handler, unsigned char privilege);
 void restart();
+
 //中断芯片相关的外中断
 void hwint00();
 void hwint01();
