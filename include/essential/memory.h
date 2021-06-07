@@ -1,6 +1,7 @@
 //定义内存操作
 #ifndef LENOS_MEMORY_H
 #define LENOS_MEMORY_H
+#include "protect.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -12,7 +13,7 @@ void memset(void *p_dst, char ch, int size);
 // memory.cc===============================================
 void task_mem();
 int init_memory_manager();
-int do_fork();
+int do_fork(int father);
 int alloc_mem(int pid, int mem_size);
 void do_exit(int pid, int status);
 void do_wait(int pid);

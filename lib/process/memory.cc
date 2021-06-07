@@ -17,17 +17,21 @@ void task_mem() {
         ipc(INDEX_SYSCALL_IPC_RECEIVE, ANY, &msg);
         int source = msg.source;
         switch (msg.u.mem_message.function) {
-            case FUNTION_FORK:
+            case FUNTION_FORK: {
                 int pid = do_fork(source);
                 msg.u.mem_message.pid = pid;
+            } break;
             case FUNTION_EXIT:
                 source_exsit = false;
                 do_exit(source, msg.u.mem_message.status);
+                break;
             case FUNTION_WAIT:
                 source_exsit = false;
                 do_wait(source);
+                break;
             case FUNTION_EXEC:
                 msg.u.mem_message.result = do_exec(&msg);
+                break;
             default:
                 break;
         }
@@ -179,13 +183,14 @@ void do_wait(int pid) {
 // 3. 为进程的寄存器赋值，包括参数赋值
 // 4. 更改进程名字和进程调度相关配置
 int do_exec(MESSAGE* msg) {
-    int source = msg->source;
-    inode* elf_file =
-        (inode*)vir2line(proc_table + source, msg->u.mem_message.file);
+    // int source = msg->source;
+    // inode* elf_file =
+    //     (inode*)vir2line(proc_table + source, msg->u.mem_message.file);
 
-    // 从文件系统中读取代码文件
-    MESSAGE fs_msg;
-    msg->type = MSG_TYPE_FS;
-    msg->u.fs_message.function = FUNTION_FS_READ;
-    msg->u.fs_message.buffer = mm_buffer;
+    // // 从文件系统中读取代码文件
+    // MESSAGE fs_msg;
+    // msg->type = MSG_TYPE_FS;
+    // msg->u.fs_message.function = FUNTION_FS_READ;
+    // msg->u.fs_message.buffer = mm_buffer;
+    return 0;
 }

@@ -37,23 +37,29 @@ LD_GDB_FLAGS = -Ttext $(ENTRYPOINT) -m elf_i386
 LENBOOT= build/boot/boot.bin build/boot/loader.bin
 LENKERNEL = build/kernel/kernel.bin
 LENKERNELGDB = build/kernel/kernel_gdb.bin
-#中间文件定义
+
+# 中间文件相关宏定义=======================================================================
+
+# 内核中间文件定义
 OBJS = build/kernel/kernel.o build/kernel/kernel_cpp.o build/essential/base.o build/essential/display.o\
- 			build/essential/global.o build/essential/memory.o \
+ 			build/essential/global.o build/essential/memory_asm.o \
 			build/interrupt/interrupt.o build/interrupt/interrupt_asm.o build/essential/proto.o \
 			build/interrupt/syscall.o build/interrupt/syscall_asm.o\
 			build/iosystem/keyboard.o build/process/tty.o build/iosystem/console.o\
-			build/process/process.o build/process/systask.o build/essential/type.o build/iosystem/harddrive.o build/filesystem/fs.o build/process/fork.o build/process/memory.o
+			build/process/process.o build/process/systask.o build/essential/type.o build/iosystem/harddrive.o build/filesystem/fs.o build/process/memory.o
+
+# C/C++运行时库需要使用的中间问价
+API_OBJS = build/interrupt/syscall_asm.o
+
 KERNEL = build/kernel/kernel.bin
 # 本makefile支持的所有操作
-.PHONY : initialize everything clean buildimg realclean image disasm
-
+.PHONY : initialize everything clean buildimg realclean image disasm api
 
 # =======================================================================================
 # make默认从此开始执行,使用bochs开始加载系统
 # gdb使用调试用的内核，bochs运行的是不带符号表的内核
 initialize : run gdb
-	bochs -f bochsrc
+	bochs -f bochsrc_dev
 
 # 删除所有文件
 realclean : 
@@ -63,19 +69,24 @@ realclean :
 clean:
 	rm -f $(OBJS)
 
+# 生成中间文件
+compile: $(OBJS)
+
 # 生成引导文件和内核文件
 everything : $(LENBOOT) $(LENKERNEL)
 
 # 生成镜像文件
 image : everything realclean buildimg
 
-run : $(LENKERNEL) $(LENBOOT)
+run : $(LENKERNEL) $(LENBOOT) 
 	dd if=build/boot/boot.bin of=c.img bs=512 count=1 conv=notrunc 
 	sudo mount ./c.img /mnt/floppy
 	sudo cp build/boot/loader.bin /mnt/floppy
 	sudo cp build/kernel/kernel.bin /mnt/floppy
 	sudo umount /mnt/floppy
 
+# 生成api静态库
+api:build/api.a 
 
 # 生成boot和loader===================================================================
 build/boot/boot.bin: boot/boot.asm boot/include/boot.inc boot/include/Ext2.inc boot/include/boot_include.asm
@@ -104,8 +115,11 @@ build/essential/global.o :lib/essential/global.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
 
-build/essential/memory.o: lib/essential/memory.asm
+build/essential/memory_asm.o: lib/essential/memory.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
+
+build/process/memory.o:lib/process/memory.cc
+	$(GCC) $(C_FLAGS) -o $@ $<
 
 build/essential/display.o :lib/essential/display.asm
 	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
@@ -152,8 +166,11 @@ build/iosystem/harddrive.o:lib/iosystem/harddrive.cc
 build/filesystem/fs.o:lib/filesystem/fs.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
 
-build/process/fork.o:lib/process/fork.cc
+build/command/echo/echo.o:command/echo/echo.cc
 	$(GCC) $(C_FLAGS) -o $@ $<
-	
- build/process/memory.o:lib/process/memory.cc
-	$(GCC) $(C_FLAGS) -o $@ $<
+
+build/command/echo/echo_asm.o:command/echo.asm
+	$(ASM) $(OBJS_ASM_FLAG) -o $@ $<
+
+build/api.a:$(API_OBJS)
+	ar rcs $@ $^
